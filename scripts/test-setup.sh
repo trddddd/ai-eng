@@ -9,52 +9,52 @@ required_failures=0
 warnings=0
 
 REQUIRED_SKILLS=(
-  "tgcli"
-  "playwright-cli"
-  "prompt-engeneering"
-  "gws-docs"
-  "gws-docs-write"
-  "gws-drive"
-  "gws-sheets"
+	"tgcli"
+	"playwright-cli"
+	"prompt-engeneering"
+	"gws-docs"
+	"gws-docs-write"
+	"gws-drive"
+	"gws-sheets"
 )
 
 DEFAULT_CLAUDE_MARKETPLACE_NAMES="${CLAUDE_MARKETPLACE_NAMES:-dapi}"
 DEFAULT_CLAUDE_EXPECTED_PLUGINS="${CLAUDE_EXPECTED_PLUGINS:-himalaya@dapi pr-review-fix-loop@dapi spec-reviewer@dapi zellij-workflow@dapi}"
 
-read -r -a OPTIONAL_CLAUDE_MARKETPLACES <<< "$DEFAULT_CLAUDE_MARKETPLACE_NAMES"
-read -r -a OPTIONAL_CLAUDE_PLUGINS <<< "$DEFAULT_CLAUDE_EXPECTED_PLUGINS"
+read -r -a OPTIONAL_CLAUDE_MARKETPLACES <<<"$DEFAULT_CLAUDE_MARKETPLACE_NAMES"
+read -r -a OPTIONAL_CLAUDE_PLUGINS <<<"$DEFAULT_CLAUDE_EXPECTED_PLUGINS"
 
 section() {
-  printf '\n== %s ==\n' "$1"
+	printf '\n== %s ==\n' "$1"
 }
 
 ok() {
-  printf '[OK] %s\n' "$1"
+	printf '[OK] %s\n' "$1"
 }
 
 fail() {
-  printf '[FAIL] %s\n' "$1"
-  required_failures=$((required_failures + 1))
+	printf '[FAIL] %s\n' "$1"
+	required_failures=$((required_failures + 1))
 }
 
 warn() {
-  printf '[WARN] %s\n' "$1"
-  warnings=$((warnings + 1))
+	printf '[WARN] %s\n' "$1"
+	warnings=$((warnings + 1))
 }
 
 note() {
-  printf '       %s\n' "$1"
+	printf '       %s\n' "$1"
 }
 
 compact_output() {
-  printf '%s' "$1" \
-    | tr '\n' ' ' \
-    | sed 's/[[:space:]][[:space:]]*/ /g; s/^ //; s/ $//' \
-    | cut -c1-220
+	printf '%s' "$1" |
+		tr '\n' ' ' |
+		sed 's/[[:space:]][[:space:]]*/ /g; s/^ //; s/ $//' |
+		cut -c1-220
 }
 
 extract_json() {
-  printf '%s\n' "$1" | awk '
+	printf '%s\n' "$1" | awk '
     BEGIN { start = 0 }
     /^[[:space:]]*[{[]/ { start = 1 }
     start { print }
@@ -62,206 +62,206 @@ extract_json() {
 }
 
 command_exists() {
-  command -v "$1" >/dev/null 2>&1
+	command -v "$1" >/dev/null 2>&1
 }
 
 check_command() {
-  local severity="$1"
-  local label="$2"
-  shift 2
+	local severity="$1"
+	local label="$2"
+	shift 2
 
-  local output
-  if output="$("$@" 2>&1)"; then
-    ok "$label"
-    return 0
-  fi
+	local output
+	if output="$("$@" 2>&1)"; then
+		ok "$label"
+		return 0
+	fi
 
-  if [ "$severity" = "required" ]; then
-    fail "$label"
-  else
-    warn "$label"
-  fi
-  note "$(compact_output "$output")"
-  return 1
+	if [ "$severity" = "required" ]; then
+		fail "$label"
+	else
+		warn "$label"
+	fi
+	note "$(compact_output "$output")"
+	return 1
 }
 
 check_json_command() {
-  local severity="$1"
-  local label="$2"
-  local filter="$3"
-  shift 3
+	local severity="$1"
+	local label="$2"
+	local filter="$3"
+	shift 3
 
-  local output
-  if ! output="$("$@" 2>&1)"; then
-    if [ "$severity" = "required" ]; then
-      fail "$label"
-    else
-      warn "$label"
-    fi
-    note "$(compact_output "$output")"
-    return 1
-  fi
+	local output
+	if ! output="$("$@" 2>&1)"; then
+		if [ "$severity" = "required" ]; then
+			fail "$label"
+		else
+			warn "$label"
+		fi
+		note "$(compact_output "$output")"
+		return 1
+	fi
 
-  if command_exists jq && printf '%s' "$output" | jq -e "$filter" >/dev/null 2>&1; then
-    ok "$label"
-    return 0
-  fi
+	if command_exists jq && printf '%s' "$output" | jq -e "$filter" >/dev/null 2>&1; then
+		ok "$label"
+		return 0
+	fi
 
-  if command_exists jq && extract_json "$output" | jq -e "$filter" >/dev/null 2>&1; then
-    ok "$label"
-    return 0
-  fi
+	if command_exists jq && extract_json "$output" | jq -e "$filter" >/dev/null 2>&1; then
+		ok "$label"
+		return 0
+	fi
 
-  if [ "$severity" = "required" ]; then
-    fail "$label"
-  else
-    warn "$label"
-  fi
-  note "$(compact_output "$output")"
-  return 1
+	if [ "$severity" = "required" ]; then
+		fail "$label"
+	else
+		warn "$label"
+	fi
+	note "$(compact_output "$output")"
+	return 1
 }
 
 check_port_selector() {
-  local output
+	local output
 
-  if ! command_exists port-selector; then
-    fail "port-selector installed"
-    return 1
-  fi
+	if ! command_exists port-selector; then
+		fail "port-selector installed"
+		return 1
+	fi
 
-  if output="$(port-selector --name setup-check 2>&1)"; then
-    if printf '%s' "$output" | tr -d '[:space:]' | grep -Eq '^[0-9]+$'; then
-      ok "port-selector returns a free port"
-      port-selector --forget --name setup-check >/dev/null 2>&1 || true
-      return 0
-    fi
-  fi
+	if output="$(port-selector --name setup-check 2>&1)"; then
+		if printf '%s' "$output" | tr -d '[:space:]' | grep -Eq '^[0-9]+$'; then
+			ok "port-selector returns a free port"
+			port-selector --forget --name setup-check >/dev/null 2>&1 || true
+			return 0
+		fi
+	fi
 
-  fail "port-selector returns a free port"
-  note "$(compact_output "$output")"
-  port-selector --forget --name setup-check >/dev/null 2>&1 || true
-  return 1
+	fail "port-selector returns a free port"
+	note "$(compact_output "$output")"
+	port-selector --forget --name setup-check >/dev/null 2>&1 || true
+	return 1
 }
 
 check_direnv_port() {
-  local output
+	local output
 
-  if ! command_exists direnv; then
-    fail "direnv installed"
-    return 1
-  fi
+	if ! command_exists direnv; then
+		fail "direnv installed"
+		return 1
+	fi
 
-  if [ ! -f .envrc ]; then
-    fail ".envrc present"
-    return 1
-  fi
+	if [ ! -f .envrc ]; then
+		fail ".envrc present"
+		return 1
+	fi
 
-  # shellcheck disable=SC2016
-  if ! output="$(direnv exec . sh -lc 'printf "%s" "${PORT:-}"' 2>/dev/null)"; then
-    fail "direnv exports numeric PORT"
-    return 1
-  fi
+	# shellcheck disable=SC2016
+	if ! output="$(direnv exec . sh -lc 'printf "%s" "${PORT:-}"' 2>/dev/null)"; then
+		fail "direnv exports numeric PORT"
+		return 1
+	fi
 
-  if printf '%s' "$output" | tr -d '[:space:]' | grep -Eq '^[0-9]+$'; then
-    ok "direnv exports numeric PORT"
-    return 0
-  fi
+	if printf '%s' "$output" | tr -d '[:space:]' | grep -Eq '^[0-9]+$'; then
+		ok "direnv exports numeric PORT"
+		return 0
+	fi
 
-  fail "direnv exports numeric PORT"
-  note "PORT=${output:-<empty>}"
-  return 1
+	fail "direnv exports numeric PORT"
+	note "PORT=${output:-<empty>}"
+	return 1
 }
 
 check_himalaya_accounts() {
-  local output
+	local output
 
-  if ! command_exists himalaya; then
-    fail "himalaya installed"
-    return 1
-  fi
+	if ! command_exists himalaya; then
+		fail "himalaya installed"
+		return 1
+	fi
 
-  if ! output="$(himalaya account list --output json 2>&1)"; then
-    warn "himalaya mail account configured"
-    note "$(compact_output "$output")"
-    return 1
-  fi
+	if ! output="$(himalaya account list --output json 2>&1)"; then
+		warn "himalaya mail account configured"
+		note "$(compact_output "$output")"
+		return 1
+	fi
 
-  if command_exists jq && printf '%s' "$output" | jq -e 'length > 0' >/dev/null 2>&1; then
-    ok "himalaya mail account configured"
-    return 0
-  fi
+	if command_exists jq && printf '%s' "$output" | jq -e 'length > 0' >/dev/null 2>&1; then
+		ok "himalaya mail account configured"
+		return 0
+	fi
 
-  warn "himalaya mail account configured"
-  note "$(compact_output "$output")"
-  return 1
+	warn "himalaya mail account configured"
+	note "$(compact_output "$output")"
+	return 1
 }
 
 check_skills() {
-  local output
-  local skill
+	local output
+	local skill
 
-  if ! command_exists npx; then
-    fail "npx available for skills checks"
-    return 1
-  fi
+	if ! command_exists npx; then
+		fail "npx available for skills checks"
+		return 1
+	fi
 
-  if ! command_exists jq; then
-    fail "jq available for skills checks"
-    return 1
-  fi
+	if ! command_exists jq; then
+		fail "jq available for skills checks"
+		return 1
+	fi
 
-  if ! output="$(npx skills ls -g --json 2>&1)"; then
-    warn "curated skills can be listed"
-    note "$(compact_output "$output")"
-    return 1
-  fi
+	if ! output="$(npx skills ls -g --json 2>&1)"; then
+		warn "curated skills can be listed"
+		note "$(compact_output "$output")"
+		return 1
+	fi
 
-  for skill in "${REQUIRED_SKILLS[@]}"; do
-    if printf '%s' "$output" | jq -e --arg skill "$skill" 'map(select(.name == $skill)) | length > 0' >/dev/null 2>&1; then
-      ok "skill installed: $skill"
-    else
-      warn "skill installed: $skill"
-    fi
-  done
+	for skill in "${REQUIRED_SKILLS[@]}"; do
+		if printf '%s' "$output" | jq -e --arg skill "$skill" 'map(select(.name == $skill)) | length > 0' >/dev/null 2>&1; then
+			ok "skill installed: $skill"
+		else
+			warn "skill installed: $skill"
+		fi
+	done
 }
 
 check_claude_plugins() {
-  local marketplaces_output
-  local plugins_output
-  local name
+	local marketplaces_output
+	local plugins_output
+	local name
 
-  if ! command_exists claude; then
-    fail "claude installed"
-    return 1
-  fi
+	if ! command_exists claude; then
+		fail "claude installed"
+		return 1
+	fi
 
-  if ! marketplaces_output="$(claude plugins marketplace list 2>&1)"; then
-    warn "Claude plugin marketplaces can be listed"
-    note "$(compact_output "$marketplaces_output")"
-    return 1
-  fi
+	if ! marketplaces_output="$(claude plugins marketplace list 2>&1)"; then
+		warn "Claude plugin marketplaces can be listed"
+		note "$(compact_output "$marketplaces_output")"
+		return 1
+	fi
 
-  for name in "${OPTIONAL_CLAUDE_MARKETPLACES[@]}"; do
-    if printf '%s' "$marketplaces_output" | grep -Fq "$name"; then
-      ok "Claude marketplace present: $name"
-    else
-      warn "Claude marketplace present: $name"
-    fi
-  done
+	for name in "${OPTIONAL_CLAUDE_MARKETPLACES[@]}"; do
+		if printf '%s' "$marketplaces_output" | grep -Fq "$name"; then
+			ok "Claude marketplace present: $name"
+		else
+			warn "Claude marketplace present: $name"
+		fi
+	done
 
-  if ! plugins_output="$(claude plugins list 2>&1)"; then
-    warn "Claude plugins can be listed"
-    note "$(compact_output "$plugins_output")"
-    return 1
-  fi
+	if ! plugins_output="$(claude plugins list 2>&1)"; then
+		warn "Claude plugins can be listed"
+		note "$(compact_output "$plugins_output")"
+		return 1
+	fi
 
-  for name in "${OPTIONAL_CLAUDE_PLUGINS[@]}"; do
-    if printf '%s' "$plugins_output" | grep -Fq "$name"; then
-      ok "Claude plugin installed: $name"
-    else
-      warn "Claude plugin installed: $name"
-    fi
-  done
+	for name in "${OPTIONAL_CLAUDE_PLUGINS[@]}"; do
+		if printf '%s' "$plugins_output" | grep -Fq "$name"; then
+			ok "Claude plugin installed: $name"
+		else
+			warn "Claude plugin installed: $name"
+		fi
+	done
 }
 
 section "Core toolchain (required)"
@@ -302,5 +302,5 @@ check_claude_plugins
 printf '\nSummary: %s required failure(s), %s warning(s)\n' "$required_failures" "$warnings"
 
 if [ "$required_failures" -ne 0 ]; then
-  exit 1
+	exit 1
 fi
