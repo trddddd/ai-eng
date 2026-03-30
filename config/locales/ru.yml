@@ -1,0 +1,33 @@
+ru:
+  app_name: "Lingvize"
+
+  sessions:
+    new:
+      title: "Вход в систему"
+      email_label: "Email"
+      password_label: "Пароль"
+      submit: "Войти"
+      no_account: "Нет аккаунта?"
+      register_link: "Зарегистрироваться"
+    flash:
+      success: "Вы успешно вошли в систему"
+      invalid: "Неверный email или пароль"
+      signed_out: "Вы вышли из системы"
+
+  registrations:
+    new:
+      title: "Регистрация"
+      email_label: "Email"
+      password_label: "Пароль"
+      password_confirmation_label: "Подтверждение пароля"
+      submit: "Зарегистрироваться"
+      have_account: "Уже есть аккаунт?"
+      login_link: "Войти"
+    flash:
+      success: "Аккаунт успешно создан"
+      error: "Ошибка при создании аккаунта"
+
+  dashboard:
+    title: "Главная"
+    welcome: "Добро пожаловать, %{email}!"
+    logout: "Выйти"
