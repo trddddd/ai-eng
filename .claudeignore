@@ -1,0 +1,34 @@
+# Git internals
+.git/
+
+# Claude/local agent state
+.claude/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+config/*.key
+config/master.key
+
+# Rails runtime artifacts
+log/
+tmp/
+storage/
+
+# Build outputs
+app/assets/builds/*
+!app/assets/builds/.keep
+
+# Test and tooling artifacts
+coverage/
+.playwright-cli/
+.ai-setup/
+homeworks/
+
+# Dependency/vendor caches
+vendor/bundle/
+node_modules/
+
+# Local IDE/OS noise
+.DS_Store
