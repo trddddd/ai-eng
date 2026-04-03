@@ -20,8 +20,16 @@ FileUtils.chdir APP_ROOT do
   #   FileUtils.cp "config/database.yml.sample", "config/database.yml"
   # end
 
+  puts "\n== Checking PostgreSQL version =="
+  pg_version = `docker compose exec postgres psql -U lingvize -d lingvize_development -t -c "SHOW server_version_num;" 2>/dev/null`.strip.to_i
+  if pg_version < 180000
+    abort "ERROR: PostgreSQL 18+ required (uuidv7 support). Current server_version_num: #{pg_version}"
+  end
+  puts "PostgreSQL version OK (#{pg_version})"
+
   puts "\n== Preparing database =="
   system! "bin/rails db:prepare"
+  system! "bin/rails db:seed"
   system! "bin/rails db:reset" if ARGV.include?("--reset")
 
   puts "\n== Removing old logs and tempfiles =="

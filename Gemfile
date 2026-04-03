@@ -25,6 +25,12 @@ gem "bcrypt", "~> 3.1.7"
 # Spaced repetition algorithm FSRS (open-spaced-repetition/rb-fsrs)
 gem "fsrs", github: "open-spaced-repetition/rb-fsrs"
 
+# Load .env in development/test (DB_HOST, DB_PORT, etc.)
+gem "dotenv-rails", groups: %i[development test]
+
+# CSV parsing (moved out of default gems in Ruby 3.4)
+gem "csv"
+
 # Locale data for Rails i18n (includes ActiveRecord translations for :ru)
 gem "rails-i18n"
 
