@@ -32,3 +32,6 @@ node_modules/
 
 # Local IDE/OS noise
 .DS_Store
+
+# big files
+db/data/
