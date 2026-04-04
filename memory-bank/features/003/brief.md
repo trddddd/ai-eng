@@ -1,7 +1,7 @@
 # Brief: Test Coverage & CI Setup
 
 **Issue:** trddddd/ai-eng#4
-**State:** OPEN
+**State:** CLOSED
 
 ## Проблема
 
