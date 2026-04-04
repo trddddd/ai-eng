@@ -1,5 +1,7 @@
 # Lingvize
 
+[![CI](https://github.com/trddddd/ai-eng/actions/workflows/rails.yml/badge.svg)](https://github.com/trddddd/ai-eng/actions/workflows/rails.yml)
+
 Веб-платформа для изучения иностранных языков в контексте предложений (карточки, интервальное повторение). Подробное описание — в [PROJECT.md](PROJECT.md).
 
 ## Стек

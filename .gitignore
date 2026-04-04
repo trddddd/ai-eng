@@ -48,3 +48,5 @@
 # Local workspace/OS files.
 .obsidian/
 .DS_Store
+
+/coverage/
