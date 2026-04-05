@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_03_192300) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -44,6 +44,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_192300) do
     t.index ["language_id"], name: "index_lexemes_on_language_id"
   end
 
+  create_table "sentence_occurrences", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "form", null: false
+    t.string "hint"
+    t.uuid "lexeme_id", null: false
+    t.uuid "sentence_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lexeme_id"], name: "index_sentence_occurrences_on_lexeme_id"
+    t.index ["sentence_id", "lexeme_id"], name: "index_sentence_occurrences_on_sentence_id_and_lexeme_id", unique: true
+  end
+
+  create_table "sentence_translations", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "sentence_id", null: false
+    t.uuid "target_language_id", null: false
+    t.text "text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sentence_id", "target_language_id"], name: "idx_on_sentence_id_target_language_id_bfcb668ec7", unique: true
+    t.index ["target_language_id"], name: "index_sentence_translations_on_target_language_id"
+  end
+
+  create_table "sentences", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.integer "audio_id"
+    t.datetime "created_at", null: false
+    t.uuid "language_id", null: false
+    t.string "source", null: false
+    t.text "text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["language_id", "text"], name: "index_sentences_on_language_id_and_text", unique: true
+    t.index ["language_id"], name: "index_sentences_on_language_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -55,4 +87,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_03_192300) do
   add_foreign_key "lexeme_glosses", "languages", column: "target_language_id"
   add_foreign_key "lexeme_glosses", "lexemes"
   add_foreign_key "lexemes", "languages"
+  add_foreign_key "sentence_occurrences", "lexemes", on_delete: :restrict
+  add_foreign_key "sentence_occurrences", "sentences", on_delete: :restrict
+  add_foreign_key "sentence_translations", "languages", column: "target_language_id"
+  add_foreign_key "sentence_translations", "sentences", on_delete: :restrict
+  add_foreign_key "sentences", "languages"
 end

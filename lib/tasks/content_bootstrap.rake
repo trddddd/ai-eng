@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/BlockLength
 namespace :content_bootstrap do
   desc "Import Oxford 5000 lexemes"
   task import_oxford_lexemes: :environment do
@@ -19,11 +20,18 @@ namespace :content_bootstrap do
     ContentBootstrap::ImportPoliglotGlosses.call
   end
 
-  desc "Run full content bootstrap (Oxford → NGSL Core → NGSL Spoken → Poliglot)"
+  desc "Import sentences from Quizword"
+  task import_quizword: :environment do
+    Sentences::ImportQuizword.call
+  end
+
+  desc "Run full content bootstrap (Oxford → NGSL Core → NGSL Spoken → Poliglot → Quizword)"
   task import_all: %i[
     import_oxford_lexemes
     import_ngsl_core_lexemes
     import_ngsl_spoken_lexemes
     import_poliglot_glosses
+    import_quizword
   ]
 end
+# rubocop:enable Metrics/BlockLength
