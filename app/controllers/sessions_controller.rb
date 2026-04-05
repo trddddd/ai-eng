@@ -7,8 +7,7 @@ class SessionsController < ApplicationController
     user = User.find_by(email: params[:email].to_s.downcase)
 
     if user&.authenticate(params[:password])
-      session[:user_id] = user.id
-      redirect_to dashboard_path, notice: t("sessions.flash.success")
+      login(user)
     else
       flash.now[:alert] = t("sessions.flash.invalid")
       render :new, status: :unprocessable_content
@@ -18,5 +17,13 @@ class SessionsController < ApplicationController
   def destroy
     session.delete(:user_id)
     redirect_to login_path, notice: t("sessions.flash.signed_out")
+  end
+
+  private
+
+  def login(user)
+    reset_session
+    session[:user_id] = user.id
+    redirect_to dashboard_path, notice: t("sessions.flash.success")
   end
 end
