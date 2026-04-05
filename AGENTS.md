@@ -16,7 +16,6 @@ See PROJECT.md for project description.
 - `bundle exec rspec` — тесты
 - `bin/rails db:migrate` — миграции БД
 - `docker compose exec postgres psql -U lingvize -d lingvize_development` — прямой доступ к БД (всегда через docker compose, не напрямую)
-- `bundle exec rubocop` — линтер; запускать после каждого значимого изменения кода
 
 ## Constraints
 
