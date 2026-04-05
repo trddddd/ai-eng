@@ -8,6 +8,7 @@ class RegistrationsController < ApplicationController
     @user = User.new(registration_params)
 
     if @user.save
+      build_starter_deck(@user)
       session[:user_id] = @user.id
       redirect_to dashboard_path, notice: t("registrations.flash.success")
     else
@@ -20,5 +21,11 @@ class RegistrationsController < ApplicationController
 
   def registration_params
     params.expect(user: %i[email password password_confirmation])
+  end
+
+  def build_starter_deck(user)
+    Cards::BuildStarterDeck.call(user)
+  rescue StandardError => e
+    Rails.logger.error("BuildStarterDeck failed for user #{user.id}: #{e.message}")
   end
 end

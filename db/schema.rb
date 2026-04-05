@@ -10,9 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_183656) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "cards", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.float "difficulty", default: 0.0, null: false
+    t.datetime "due", null: false
+    t.integer "elapsed_days", default: 0, null: false
+    t.integer "lapses", default: 0, null: false
+    t.datetime "last_review"
+    t.integer "reps", default: 0, null: false
+    t.integer "scheduled_days", default: 0, null: false
+    t.uuid "sentence_occurrence_id", null: false
+    t.float "stability", default: 0.0, null: false
+    t.integer "state", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "due"], name: "index_cards_on_user_id_and_due"
+    t.index ["user_id", "sentence_occurrence_id"], name: "index_cards_on_user_id_and_sentence_occurrence_id", unique: true
+    t.index ["user_id", "state"], name: "index_cards_on_user_id_and_state"
+  end
 
   create_table "languages", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
     t.string "code", null: false
@@ -84,6 +103,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_04_000300) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "cards", "sentence_occurrences", on_delete: :restrict
+  add_foreign_key "cards", "users", on_delete: :cascade
   add_foreign_key "lexeme_glosses", "languages", column: "target_language_id"
   add_foreign_key "lexeme_glosses", "lexemes"
   add_foreign_key "lexemes", "languages"
