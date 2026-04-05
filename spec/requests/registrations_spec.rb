@@ -25,5 +25,35 @@ RSpec.describe "Registrations", type: :request do
       post register_path, params: { user: { email: "", password: "short", password_confirmation: "short" } }
       expect(response).to have_http_status(:unprocessable_content)
     end
+
+    context "when A1 content exists" do
+      let(:en) { create(:language, code: "en", name: "English") }
+      let(:ru) { create(:language, code: "ru", name: "Russian") }
+
+      before do
+        lexeme = create(:lexeme, language: en, cefr_level: "a1", headword: "hello")
+        sentence = create(:sentence, language: en, text: "I said hello.")
+        create(:sentence_translation, sentence: sentence, target_language: ru, text: "Перевод")
+        create(:sentence_occurrence, sentence: sentence, lexeme: lexeme, form: "hello")
+      end
+
+      it "creates cards for the new user" do
+        expect do
+          post register_path, params: { user: { email: "new@example.com", password: "password123", password_confirmation: "password123" } }
+        end.to change(Card, :count).by(1)
+      end
+    end
+
+    context "when BuildStarterDeck raises an error" do
+      before do
+        allow(Cards::BuildStarterDeck).to receive(:call).and_raise(StandardError, "oops")
+      end
+
+      it "still creates the user and redirects to dashboard" do
+        post register_path, params: { user: { email: "new@example.com", password: "password123", password_confirmation: "password123" } }
+        expect(response).to redirect_to(dashboard_path)
+        expect(User.find_by(email: "new@example.com")).to be_present
+      end
+    end
   end
 end
