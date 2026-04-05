@@ -1,7 +1,7 @@
 # Brief: Cold Start via DB Dump
 
 **Issue:** trddddd/ai-eng#8
-**State:** OPEN
+**State:** DONE — shipped in trddddd/ai-eng#9 (2026-04-05)
 
 ## Проблема
 
