@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/BlockLength
 namespace :content_bootstrap do
   desc "Import Oxford 5000 lexemes"
   task import_oxford_lexemes: :environment do
@@ -33,3 +34,4 @@ namespace :content_bootstrap do
     import_quizword
   ]
 end
+# rubocop:enable Metrics/BlockLength
