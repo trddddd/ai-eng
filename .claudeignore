@@ -35,3 +35,4 @@ node_modules/
 
 # big files
 db/data/
+db/dump/
