@@ -1,7 +1,7 @@
 # Brief: Sentence Domain & Quizword Import
 
 **Issue:** trddddd/ai-eng#6
-**State:** OPEN
+**State:** CLOSED
 
 ## Проблема
 
