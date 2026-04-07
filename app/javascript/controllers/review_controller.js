@@ -12,13 +12,24 @@ export default class extends Controller {
     this.attemptCount = 0
     this.backspaceCount = 0
     this.firstAnswerRecorded = false
+    this.readyToSubmit = false
+    this.submitting = false
     this.audioBuffer = null
     this.audioContext = null
+    this.audioSource = null
     this._originalPlaceholder = this.inputTarget.placeholder
 
     this.inputTarget.focus()
     this.resizeInput()
     this.preloadAudio()
+  }
+
+  disconnect() {
+    if (!this.audioSource) return
+
+    this.audioSource.onended = null
+    this.audioSource.stop()
+    this.audioSource = null
   }
 
   onInput() {
@@ -46,8 +57,15 @@ export default class extends Controller {
     }
   }
 
-  submit(event) {
+  async submit(event) {
+    if (this.readyToSubmit) {
+      this.readyToSubmit = false
+      return
+    }
+
     event.preventDefault()
+    if (this.submitting) return
+
     const userAnswer = this.inputTarget.value.trim()
     const isCorrect = userAnswer.toLowerCase() === this.answerValue
 
@@ -59,8 +77,9 @@ export default class extends Controller {
     this.attemptCount++
 
     if (isCorrect) {
-      this.playAudio()
-      this.finalSubmit()
+      this.submitting = true
+      this.inputTarget.disabled = true
+      await this.playAudioThenSubmit()
     } else {
       this.resetUIForRetry()
     }
@@ -78,6 +97,7 @@ export default class extends Controller {
     this.elapsedTarget.value = Date.now() - this.startedAt
     this.attemptsTarget.value = this.attemptCount
     this.backspacesTarget.value = this.backspaceCount
+    this.readyToSubmit = true
     this.element.querySelector("form").requestSubmit()
   }
 
@@ -87,6 +107,8 @@ export default class extends Controller {
     try {
       this.audioContext = this.audioContext || new AudioContext()
       const response = await fetch(this.audioUrlValue)
+      if (!response.ok) return
+
       const arrayBuffer = await response.arrayBuffer()
       this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
     } catch {
@@ -94,13 +116,44 @@ export default class extends Controller {
     }
   }
 
-  playAudio() {
-    if (!this.audioBuffer || !this.audioContext) return
+  async playAudioThenSubmit() {
+    const playbackStarted = await this.playAudio()
 
-    const source = this.audioContext.createBufferSource()
-    source.buffer = this.audioBuffer
-    source.connect(this.audioContext.destination)
-    source.start(0)
+    if (!playbackStarted) {
+      this.finalSubmit()
+    }
+  }
+
+  async playAudio() {
+    if (!this.audioBuffer || !this.audioContext) return false
+
+    try {
+      if (this.audioContext.state === "suspended") {
+        await this.audioContext.resume()
+      }
+
+      if (this.audioSource) {
+        this.audioSource.onended = null
+        this.audioSource.stop()
+      }
+
+      const source = this.audioContext.createBufferSource()
+      this.audioSource = source
+      source.buffer = this.audioBuffer
+      source.connect(this.audioContext.destination)
+      source.onended = () => {
+        if (this.audioSource !== source) return
+
+        this.audioSource = null
+        this.finalSubmit()
+      }
+      source.start(0)
+
+      return true
+    } catch {
+      this.audioSource = null
+      return false
+    }
   }
 
   resizeInput() {

@@ -7,7 +7,9 @@ class AudioController < ApplicationController
   TATOEBA_AUDIO_BASE = "https://audio.tatoeba.org/sentences/eng".freeze
 
   def sentence
-    audio_id = params[:id].to_i
+    audio_id = Integer(params[:id], exception: false)
+    return head(:bad_request) unless audio_id&.positive?
+
     uri = URI("#{TATOEBA_AUDIO_BASE}/#{audio_id}.mp3")
 
     http_response = Net::HTTP.get_response(uri)
