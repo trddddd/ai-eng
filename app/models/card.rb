@@ -1,8 +1,13 @@
 class Card < ApplicationRecord
   belongs_to :user
   belongs_to :sentence_occurrence
+  has_many :review_logs, dependent: :destroy
 
   delegate :lexeme, :sentence, :form, :cloze_text, to: :sentence_occurrence
+
+  scope :due_for_review, lambda { |user, now: Time.current|
+    where(user: user, mastered_at: nil).where(due: ..now)
+  }
 
   STATE_NEW        = 0
   STATE_LEARNING   = 1
@@ -33,5 +38,20 @@ class Card < ApplicationRecord
       state: fsrs_card.state,
       last_review: fsrs_card.last_review
     )
+  end
+
+  def schedule!(rating:, now: Time.current)
+    scheduler = Fsrs::Scheduler.new
+    fsrs_card = to_fsrs_card
+    results = scheduler.repeat(fsrs_card, now.utc)
+    apply_fsrs_card!(results[rating].card)
+  end
+
+  def master!(now: Time.current)
+    update!(mastered_at: now)
+  end
+
+  def mastered?
+    mastered_at.present?
   end
 end

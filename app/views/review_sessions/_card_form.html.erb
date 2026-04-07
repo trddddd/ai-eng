@@ -1,0 +1,53 @@
+<%= turbo_frame_tag "review_card" do %>
+<div class="bg-white rounded-lg shadow p-6"
+     data-controller="review"
+     data-review-answer-value="<%= card.form.downcase %>"
+     data-review-audio-url-value="<%= card.sentence.audio_id ? "https://audio.tatoeba.org/sentences/eng/#{card.sentence.audio_id}.mp3" : "" %>">
+
+  <p class="text-xl text-gray-800 mb-4 leading-relaxed">
+    <%= card.cloze_text %>
+  </p>
+
+  <% translation = card.sentence.sentence_translations.find { |st| st.target_language.code == "ru" } %>
+  <% if translation %>
+    <p class="text-sm text-gray-500 mb-6 italic"><%= translation.text %></p>
+  <% end %>
+
+  <% glosses = card.lexeme.lexeme_glosses.select { |g| g.target_language.code == "ru" } %>
+  <% if glosses.any? %>
+    <p class="text-sm text-gray-400 mb-4"><%= glosses.map(&:gloss).join(", ") %></p>
+  <% end %>
+
+  <%= form_with url: review_path, method: :post, data: { action: "submit->review#submit" } do |f| %>
+    <%= f.hidden_field :card_id, value: card.id %>
+    <%= f.hidden_field :answer_text, value: "", data: { review_target: "answerText" } %>
+    <%= f.hidden_field :elapsed_ms, value: 0, data: { review_target: "elapsed" } %>
+    <%= f.hidden_field :attempts, value: 1, data: { review_target: "attempts" } %>
+    <%= f.hidden_field :backspace_count, value: 0, data: { review_target: "backspaces" } %>
+
+    <div class="relative mb-4">
+      <div class="absolute inset-0 flex items-center px-3 pointer-events-none hidden"
+           data-review-target="ghost">
+        <span class="text-gray-300 text-lg"><%= card.form %></span>
+      </div>
+
+      <input type="text"
+             autofocus
+             autocomplete="off"
+             placeholder="<%= t("reviews.placeholder") %>"
+             class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-lg transition-colors"
+             data-review-target="input"
+             data-action="input->review#onInput keydown->review#trackKey" />
+    </div>
+
+    <div class="flex items-center justify-between">
+      <%= f.submit t("reviews.submit"),
+          class: "bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer" %>
+
+      <%= button_to master_card_path(card), method: :post, class: "text-2xl opacity-50 hover:opacity-100 transition-opacity", title: t("reviews.master") do %>
+        🧠
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<% end %>

@@ -10,5 +10,12 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#index", as: :dashboard
 
+  resource :review, only: [:show, :create], controller: "review_sessions"
+  resources :cards, only: [] do
+    member do
+      post :master
+    end
+  end
+
   root to: "sessions#new"
 end

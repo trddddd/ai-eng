@@ -72,6 +72,60 @@ RSpec.describe Card, type: :model do
     # rubocop:enable RSpec/ExampleLength
   end
 
+  describe ".due_for_review" do
+    let(:user) { create(:user) }
+
+    it "returns cards with due <= now" do
+      card = create(:card, user: user, due: 1.hour.ago)
+      expect(described_class.due_for_review(user)).to include(card)
+    end
+
+    it "excludes cards with due in the future" do
+      create(:card, user: user, due: 1.hour.from_now)
+      expect(described_class.due_for_review(user)).to be_empty
+    end
+
+    it "excludes mastered cards" do
+      create(:card, user: user, due: 1.hour.ago, mastered_at: Time.current)
+      expect(described_class.due_for_review(user)).to be_empty
+    end
+
+    it "excludes cards from other users" do
+      other_user = create(:user)
+      create(:card, user: other_user, due: 1.hour.ago)
+      expect(described_class.due_for_review(user)).to be_empty
+    end
+  end
+
+  describe "#schedule!" do
+    it "updates FSRS fields after scheduling" do
+      persisted_card = create(:card)
+      original_due = persisted_card.due
+      persisted_card.schedule!(rating: ReviewLog::RATING_GOOD)
+      persisted_card.reload
+
+      expect(persisted_card.reps).to eq(1)
+      expect(persisted_card.due).not_to eq(original_due)
+    end
+  end
+
+  describe "#master!" do
+    it "sets mastered_at" do
+      persisted_card = create(:card)
+      expect { persisted_card.master! }.to change { persisted_card.reload.mastered_at }.from(nil)
+    end
+  end
+
+  describe "#mastered?" do
+    it "returns false when mastered_at is nil" do
+      expect(build(:card, mastered_at: nil)).not_to be_mastered
+    end
+
+    it "returns true when mastered_at is set" do
+      expect(build(:card, mastered_at: Time.current)).to be_mastered
+    end
+  end
+
   describe "#apply_fsrs_card!" do
     # rubocop:disable RSpec/ExampleLength
     it "persists FSRS state from an Fsrs::Card" do

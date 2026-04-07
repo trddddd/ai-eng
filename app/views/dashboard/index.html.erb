@@ -10,4 +10,9 @@
   <p class="text-gray-700">
     <%= t("dashboard.welcome", email: current_user.email) %>
   </p>
+
+  <div class="mt-8">
+    <%= link_to t("reviews.title"), review_path,
+        class: "inline-block bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 text-lg" %>
+  </div>
 </div>
