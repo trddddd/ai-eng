@@ -1,7 +1,7 @@
 # Brief: Некорректный матчинг слов при импорте предложений
 
 **Issue:** trddddd/ai-eng#17
-**State:** IN PROGRESS
+**State:** CLOSED
 
 ## Проблема
 
