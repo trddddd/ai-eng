@@ -14,6 +14,7 @@ export default class extends Controller {
     this.firstAnswerRecorded = false
     this.audioBuffer = null
     this.audioContext = null
+    this._originalPlaceholder = this.inputTarget.placeholder
 
     this.inputTarget.focus()
     this.resizeInput()
@@ -25,7 +26,7 @@ export default class extends Controller {
     const expected = this.answerValue
 
     if (typed.length > 0) {
-      this.ghostTarget.classList.add("hidden")
+      this.inputTarget.placeholder = this._originalPlaceholder
     }
 
     if (typed.length === 0) {
@@ -67,7 +68,7 @@ export default class extends Controller {
 
   resetUIForRetry() {
     this.inputTarget.value = ""
-    this.ghostTarget.classList.remove("hidden")
+    this.inputTarget.placeholder = this.answerValue
     this.inputTarget.classList.remove("border-green-500", "ring-green-500", "border-red-500", "ring-red-500")
     this.inputTarget.classList.add("border-amber-500", "ring-amber-500")
     this.inputTarget.focus()
