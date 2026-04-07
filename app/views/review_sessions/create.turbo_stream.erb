@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "review_card" do %>
+  <% if @next_card %>
+    <%= render "review_sessions/card_form", card: @next_card %>
+  <% else %>
+    <%= render "review_sessions/empty_state" %>
+  <% end %>
+<% end %>

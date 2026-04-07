@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_183656) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,6 +21,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_183656) do
     t.integer "elapsed_days", default: 0, null: false
     t.integer "lapses", default: 0, null: false
     t.datetime "last_review"
+    t.datetime "mastered_at"
     t.integer "reps", default: 0, null: false
     t.integer "scheduled_days", default: 0, null: false
     t.uuid "sentence_occurrence_id", null: false
@@ -61,6 +62,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_183656) do
     t.datetime "updated_at", null: false
     t.index ["language_id", "headword"], name: "index_lexemes_on_language_id_and_headword", unique: true
     t.index ["language_id"], name: "index_lexemes_on_language_id"
+  end
+
+  create_table "review_logs", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.float "answer_accuracy"
+    t.string "answer_text"
+    t.integer "attempts", default: 1, null: false
+    t.integer "backspace_count"
+    t.uuid "card_id", null: false
+    t.boolean "correct", null: false
+    t.datetime "created_at", null: false
+    t.integer "elapsed_ms"
+    t.integer "rating", null: false
+    t.string "recall_quality", null: false
+    t.datetime "reviewed_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["card_id", "reviewed_at"], name: "index_review_logs_on_card_id_and_reviewed_at"
   end
 
   create_table "sentence_occurrences", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
@@ -108,6 +125,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_183656) do
   add_foreign_key "lexeme_glosses", "languages", column: "target_language_id"
   add_foreign_key "lexeme_glosses", "lexemes"
   add_foreign_key "lexemes", "languages"
+  add_foreign_key "review_logs", "cards", on_delete: :cascade
   add_foreign_key "sentence_occurrences", "lexemes", on_delete: :restrict
   add_foreign_key "sentence_occurrences", "sentences", on_delete: :restrict
   add_foreign_key "sentence_translations", "languages", column: "target_language_id"

@@ -29,3 +29,12 @@
 
 en:
   hello: "Hello world"
+
+  reviews:
+    title: "Review"
+    placeholder: "Type the word..."
+    submit: "Check"
+    master: "I know this word"
+    done_title: "All cards reviewed!"
+    done_message: "Come back later for your next review."
+    back_to_dashboard: "Dashboard"

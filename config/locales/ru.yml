@@ -31,3 +31,12 @@ ru:
     title: "Главная"
     welcome: "Добро пожаловать, %{email}!"
     logout: "Выйти"
+
+  reviews:
+    title: "Повторение"
+    placeholder: "Введите слово..."
+    submit: "Проверить"
+    master: "Знаю это слово"
+    done_title: "Все карточки повторены!"
+    done_message: "Возвращайтесь позже для следующего повторения."
+    back_to_dashboard: "На главную"
