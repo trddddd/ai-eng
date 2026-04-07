@@ -35,19 +35,18 @@ export default class extends Controller {
   onInput() {
     const typed = this.inputTarget.value.toLowerCase()
     const expected = this.answerValue
+    this.resizeInput()
 
     if (typed.length > 0) {
-      this.inputTarget.placeholder = this._originalPlaceholder
+      this.inputTarget.placeholder = ""
     }
 
     if (typed.length === 0) {
-      this.inputTarget.classList.remove("border-green-500", "border-red-500", "ring-green-500", "ring-red-500")
+      this.inputTarget.style.borderBottomColor = ""
     } else if (expected.startsWith(typed)) {
-      this.inputTarget.classList.remove("border-red-500", "ring-red-500")
-      this.inputTarget.classList.add("border-green-500", "ring-green-500")
+      this.inputTarget.style.borderBottomColor = getComputedStyle(document.documentElement).getPropertyValue('--color-tertiary').trim()
     } else {
-      this.inputTarget.classList.remove("border-green-500", "ring-green-500")
-      this.inputTarget.classList.add("border-red-500", "ring-red-500")
+      this.inputTarget.style.borderBottomColor = getComputedStyle(document.documentElement).getPropertyValue('--color-error').trim()
     }
   }
 
@@ -88,8 +87,7 @@ export default class extends Controller {
   resetUIForRetry() {
     this.inputTarget.value = ""
     this.inputTarget.placeholder = this.answerValue
-    this.inputTarget.classList.remove("border-green-500", "ring-green-500", "border-red-500", "ring-red-500")
-    this.inputTarget.classList.add("border-amber-500", "ring-amber-500")
+    this.inputTarget.style.borderBottomColor = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim()
     this.inputTarget.focus()
   }
 
@@ -153,6 +151,32 @@ export default class extends Controller {
     } catch {
       this.audioSource = null
       return false
+    }
+  }
+
+  async triggerAudio() {
+    if (!this.audioBuffer || !this.audioContext) return
+
+    try {
+      if (this.audioContext.state === "suspended") {
+        await this.audioContext.resume()
+      }
+
+      if (this.audioSource) {
+        this.audioSource.onended = null
+        this.audioSource.stop()
+      }
+
+      const source = this.audioContext.createBufferSource()
+      this.audioSource = source
+      source.buffer = this.audioBuffer
+      source.connect(this.audioContext.destination)
+      source.onended = () => {
+        if (this.audioSource === source) this.audioSource = null
+      }
+      source.start(0)
+    } catch {
+      // Audio unavailable — silent fallback
     }
   }
 

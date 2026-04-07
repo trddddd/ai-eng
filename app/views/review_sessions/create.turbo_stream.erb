@@ -5,3 +5,13 @@
     <%= render "review_sessions/empty_state" %>
   <% end %>
 <% end %>
+
+<%= turbo_stream.replace "filament-container" do %>
+  <% if @total > 0 %>
+    <div id="filament-container" class="w-full bg-surface-container-low h-[2px]">
+      <div class="filament-progress" style="width: <%= (@position.to_f / @total * 100).round %>%"></div>
+    </div>
+  <% else %>
+    <div id="filament-container" class="hidden"></div>
+  <% end %>
+<% end %>

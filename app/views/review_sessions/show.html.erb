@@ -1,6 +1,8 @@
-<div class="max-w-2xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold text-gray-900 mb-6"><%= t("reviews.title") %></h1>
+<% if @total > 0 %>
+  <% content_for :filament_width do %><%= "width: #{(@position.to_f / @total * 100).round}%" %><% end %>
+<% end %>
 
+<div class="w-full">
   <% if @card %>
     <%= render "card_form", card: @card %>
   <% else %>
