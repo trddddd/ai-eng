@@ -1,6 +1,7 @@
 # Brief — Сессия повторений со спейсед репетишн
 
 **Issue:** trddddd/ai-eng#14
+**State:** DONE — shipped in trddddd/ai-eng#15 (2026-04-07)
 
 ## Проблема
 
