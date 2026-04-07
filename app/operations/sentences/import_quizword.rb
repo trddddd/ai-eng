@@ -112,7 +112,7 @@ module Sentences
               end
 
               lexeme_id, hw = match
-              form = row[:text_eng][row[:text_eng].downcase.index(hw.downcase), hw.length]
+              form = row[:text_eng][row[:text_eng].downcase.index(word_boundaries_regex(hw)), hw.length]
               valid_rows << row.merge(lexeme_id: lexeme_id, form: form)
             end
 
@@ -228,12 +228,17 @@ module Sentences
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
+    def word_boundaries_regex(headword)
+      Regexp.new("\\b#{Regexp.escape(headword)}\\b", Regexp::IGNORECASE)
+    end
+
     def find_lexeme(text_eng, lexemes)
-      candidates = lexemes.select { |_id, hw| text_eng.downcase.include?(hw.downcase) }
+      downcased = text_eng.downcase
+      candidates = lexemes.select { |_id, hw| word_boundaries_regex(hw).match?(downcased) }
       return nil if candidates.empty?
 
       candidates.min_by do |id, hw|
-        idx = text_eng.downcase.index(hw.downcase)
+        idx = downcased.index(word_boundaries_regex(hw))
         [-hw.length, idx, hw.downcase, id.to_s]
       end
     end
