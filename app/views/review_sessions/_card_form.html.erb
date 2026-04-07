@@ -2,7 +2,7 @@
 <div class="bg-white rounded-lg shadow p-6"
      data-controller="review"
      data-review-answer-value="<%= card.form.downcase %>"
-     data-review-audio-url-value="<%= card.sentence.audio_id ? "https://audio.tatoeba.org/sentences/eng/#{card.sentence.audio_id}.mp3" : "" %>">
+     data-review-audio-url-value="<%= card.sentence.audio_id ? audio_sentence_path(card.sentence.audio_id) : "" %>">
 
   <p class="text-xl text-gray-800 mb-4 leading-relaxed">
     <%= card.cloze_text %>

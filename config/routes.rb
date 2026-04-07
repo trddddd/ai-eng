@@ -10,6 +10,8 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#index", as: :dashboard
 
+  get "/audio/sentences/:id", to: "audio#sentence", as: :audio_sentence
+
   resource :review, only: [:show, :create], controller: "review_sessions"
   resources :cards, only: [] do
     member do
