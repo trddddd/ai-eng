@@ -1,13 +1,3 @@
 <%= turbo_frame_tag "review_card" do %>
-<div class="bg-white rounded-lg shadow p-8 text-center">
-  <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-    </svg>
-  </div>
-  <h2 class="text-xl font-semibold text-gray-900 mb-2"><%= t("reviews.done_title") %></h2>
-  <p class="text-gray-500 mb-6"><%= t("reviews.done_message") %></p>
-  <%= link_to t("reviews.back_to_dashboard"), dashboard_path,
-      class: "inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700" %>
-</div>
+  <%= render "review_sessions/empty_state_inner" %>
 <% end %>

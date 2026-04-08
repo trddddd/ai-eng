@@ -4,7 +4,7 @@ See PROJECT.md for project description.
 
 - **Runtime:** Ruby 4.x, Rails 8
 - **Data:** PostgreSQL, Redis
-- **UI:** Tailwind CSS, Hotwire (Turbo, Stimulus; при необходимости Turbo Native)
+- **UI:** Tailwind CSS, Hotwire (Turbo, Stimulus; при необходимости Turbo Native). Дизайн-система описана в `DESIGN.md` (source of truth для цветов, типографики, компонентов). При создании или изменении UI-элементов — сверяться с `DESIGN.md`.
 - **Повторения:** алгоритм [FSRS](https://expertium.github.io/Algorithm.html);
 - **Прочее:** i18n; сервисы озвучки (в т.ч. нейросинтез); корпуса и интеграции примеров (Tatoeba, OPUS, Reverso и др.)
 

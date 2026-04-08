@@ -1,0 +1,153 @@
+<%= turbo_frame_tag "review_card" do %>
+  <div class="w-full flex justify-between items-end mb-12">
+    <div class="flex flex-col gap-1">
+      <span class="text-on-surface-variant font-label text-xs font-medium tracking-widest uppercase">Прогресс</span>
+      <span class="font-headline text-2xl font-bold text-on-surface">
+        <%= @position %><span class="text-on-surface-variant/40 mx-1">/</span><%= @total %>
+      </span>
+    </div>
+    <div class="flex flex-col items-end gap-1">
+      <span class="text-on-surface-variant font-label text-xs font-medium tracking-widest uppercase">Таймер сессии</span>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">timer</span>
+        <span class="text-primary font-headline font-bold text-xl" data-review-target="timer">00:00</span>
+      </div>
+    </div>
+  </div>
+
+  <%# Card %>
+  <div class="w-full bg-surface-container-lowest rounded-xl p-10 md:p-16 editorial-shadow flex flex-col items-center text-center relative overflow-hidden"
+       data-controller="review"
+       data-review-answer-value="<%= card.form.downcase %>"
+       data-review-audio-url-value="<%= card.sentence.audio_id ? audio_sentence_path(card.sentence.audio_id) : "" %>">
+
+    <%# Decorative element %>
+    <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+      <span class="material-symbols-outlined text-[120px]">auto_stories</span>
+    </div>
+
+    <%# Cloze + audio %>
+    <div class="flex flex-col items-center gap-6 mb-12">
+      <%# Audio button (above sentence) %>
+      <% if card.sentence.audio_id %>
+        <button type="button"
+                  aria-label="<%= t('reviews.play_audio') %>"
+                  class="w-12 h-12 rounded-full flex items-center justify-center bg-primary-fixed text-on-primary-fixed hover:bg-primary hover:text-white focus:ring-2 focus:ring-primary/50 transition-all duration-300"
+                  data-action="click->review#triggerAudio">
+          <span class="material-symbols-outlined">volume_up</span>
+        </button>
+      <% end %>
+
+      <%# Inline cloze %>
+      <% parts = card.sentence.text.split(/#{Regexp.escape(card.form)}/i, 2) %>
+      <% if parts.length == 2 && parts[0] && parts[1] %>
+        <p class="font-body text-xl md:text-2xl text-on-surface-variant italic leading-relaxed max-w-2xl">
+          "<%= parts[0] %><span class="inline-input-wrapper">
+            <input type="text"
+                   autofocus
+                   autocomplete="off"
+                   aria-label="<%= t('reviews.input_label') %>"
+                   class="inline-input"
+                   data-review-target="input"
+                   data-action="input->review#onInput keydown->review#trackKey" />
+          </span><%= parts[1] %>"
+        </p>
+      <% else %>
+        <%# Fallback: regular display %>
+        <p class="font-body text-xl md:text-2xl text-on-surface-variant italic leading-relaxed max-w-2xl mb-4">
+          "<%= card.cloze_text %>"
+        </p>
+        <input type="text"
+               autofocus
+               autocomplete="off"
+               aria-label="<%= t('reviews.input_label') %>"
+               class="inline-input"
+               data-review-target="input"
+               data-action="input->review#onInput keydown->review#trackKey" />
+      <% end %>
+
+      <%# Translation %>
+      <% translation = card.sentence.sentence_translations.find { |st| st.target_language.code == "ru" } %>
+      <% if translation %>
+        <span class="text-on-surface-variant font-label text-sm italic font-medium mt-2">
+          <%= translation.text %>
+        </span>
+      <% end %>
+    </div>
+
+    <%# Form %>
+    <%= form_with url: review_path, method: :post, data: { action: "submit->review#submit" } do |f| %>
+      <%= f.hidden_field :card_id, value: card.id %>
+      <%= f.hidden_field :position, value: @position %>
+      <%= f.hidden_field :total, value: @total %>
+      <%= f.hidden_field :answer_text, value: "", data: { review_target: "answerText" } %>
+      <%= f.hidden_field :elapsed_ms, value: 0, data: { review_target: "elapsed" } %>
+      <%= f.hidden_field :attempts, value: 1, data: { review_target: "attempts" } %>
+      <%= f.hidden_field :backspace_count, value: 0, data: { review_target: "backspaces" } %>
+
+      <div class="w-full max-w-lg flex flex-col gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <%= f.submit t("reviews.submit"),
+              class: "w-full bg-gradient-to-br from-primary to-primary-container text-white font-headline font-semibold py-4 rounded-md transition-all duration-300 hover:translate-y-[-2px] active:scale-[0.98] focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer" %>
+
+          <%= link_to master_card_path(card, position: @position), data: { turbo_method: :post },
+              class: "w-full bg-surface-container-high text-on-surface-variant font-headline font-semibold py-4 rounded-md transition-all duration-300 hover:bg-surface-container-highest hover:translate-y-[-2px] focus:ring-2 focus:ring-outline-variant focus:ring-offset-2 flex items-center justify-center gap-2",
+              aria: { label: t("reviews.master") } do %>
+            <span class="material-symbols-outlined text-[20px]">verified</span>
+            <%= t("reviews.master") %>
+          <% end %>
+        </div>
+
+        <div class="flex justify-center gap-8">
+          <button type="button"
+                  aria-label="<%= t('reviews.dont_know') %>"
+                  onclick="alert('TODO: Не знаю — кнопка в разработке')"
+                  class="text-on-surface-variant font-label text-sm font-medium hover:text-on-surface transition-color duration-300 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">help_outline</span>
+            <%= t("reviews.dont_know") %>
+          </button>
+          <button type="button"
+                  aria-label="<%= t('reviews.skip') %>"
+                  onclick="alert('TODO: Пропустить — кнопка в разработке')"
+                  class="text-on-surface-variant font-label text-sm font-medium hover:text-on-surface transition-color duration-300 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">skip_next</span>
+            <%= t("reviews.skip") %>
+          </button>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Study Metadata (3 columns) %>
+  <div class="w-full mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+    <%# Context hint %>
+    <div>
+      <h3 class="font-headline font-bold text-on-surface text-sm mb-2">Контекст</h3>
+      <p class="font-body text-on-surface-variant text-base leading-relaxed">
+        TODO: реализовать поле context_note в модели Sentence...
+      </p>
+    </div>
+
+    <%# Difficulty %>
+    <div>
+      <h3 class="font-headline font-bold text-on-surface text-sm mb-2">Сложность</h3>
+      <div class="flex gap-1">
+        <div class="h-1.5 w-6 rounded-full bg-tertiary-fixed"></div>
+        <div class="h-1.5 w-6 rounded-full bg-tertiary-fixed"></div>
+        <div class="h-1.5 w-6 rounded-full bg-surface-container-highest"></div>
+      </div>
+      <p class="text-on-surface-variant text-xs mt-1">TODO: получить реальную сложность из FSRS</p>
+    </div>
+
+    <%# Audio settings %>
+    <div>
+      <h3 class="font-headline font-bold text-on-surface text-sm mb-2">Аудио</h3>
+      <button type="button"
+              onclick="alert('TODO: Замедлить произношение — реализовать через audio.playbackRate')"
+              class="text-primary text-sm font-medium text-left hover:underline">
+        Замедлить произношение
+      </button>
+      <p class="text-on-surface-variant text-xs mt-1">TODO: реализовать настройку</p>
+    </div>
+  </div>
+<% end %>

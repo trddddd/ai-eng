@@ -4,6 +4,8 @@ class ReviewSessionsController < ApplicationController
   def show
     @cards = Reviews::BuildSession.call(user: current_user)
     @card = @cards.first
+    @total = @cards.size
+    @position = 1
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -22,6 +24,8 @@ class ReviewSessionsController < ApplicationController
 
     @next_cards = Reviews::BuildSession.call(user: current_user)
     @next_card = @next_cards.first
+    @total = @next_cards.size
+    @position = params[:position].to_i + 1
   end
   # rubocop:enable Metrics/AbcSize
 

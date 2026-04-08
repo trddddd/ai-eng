@@ -1,0 +1,9 @@
+  <div class="w-full bg-surface-container-lowest rounded-xl editorial-shadow p-10 text-center flex flex-col items-center">
+    <div class="w-16 h-16 bg-tertiary-fixed/10 rounded-full flex items-center justify-center mx-auto mb-4">
+      <span class="material-symbols-outlined text-tertiary text-[32px]">check_circle</span>
+    </div>
+    <h2 class="font-headline text-xl font-semibold text-on-surface mb-2"><%= t("reviews.done_title") %></h2>
+    <p class="text-on-surface-variant font-label mb-6"><%= t("reviews.done_message") %></p>
+    <%= link_to t("reviews.back_to_dashboard"), dashboard_path,
+        class: "inline-block bg-gradient-to-br from-primary to-primary-container text-white font-headline font-semibold px-6 py-3 rounded-md hover:translate-y-[-2px] transition-all duration-300" %>
+  </div>
