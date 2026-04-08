@@ -1,7 +1,7 @@
 # Brief: Дизайн-система проекта
 
 **Issue:** trddddd/ai-eng#16
-**State:** IN PROGRESS
+**State:** SHIPPED
 
 ## Проблема
 
