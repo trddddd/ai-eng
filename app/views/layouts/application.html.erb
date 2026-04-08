@@ -15,9 +15,10 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
@@ -25,37 +26,55 @@
   </head>
 
   <body class="bg-surface text-on-surface font-label min-h-screen flex flex-col">
-    <header class="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20">
-      <nav class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-        <span class="font-headline font-bold text-xl text-on-surface">Lingvize</span>
-        <div class="flex items-center gap-6">
-          <%= link_to t("dashboard.title"), dashboard_path,
-              class: "font-headline font-semibold tracking-tight transition-colors duration-300 #{current_page?(dashboard_path) ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface/60 hover:text-primary'}" %>
-          <%= link_to t("reviews.title"), review_path,
-              class: "font-headline font-semibold tracking-tight transition-colors duration-300 #{current_page?(review_path) ? 'text-primary border-b-2 border-primary pb-1' : 'text-on-surface/60 hover:text-primary'}" %>
-          <%= link_to t("sessions.flash.signed_out"), logout_path, data: { turbo_method: :delete },
-              class: "font-label text-sm text-on-surface/40 hover:text-on-surface transition-colors duration-300" %>
-        </div>
-      </nav>
-    </header>
-
-    <div id="filament-container" class="<%= content_for?(:filament_width) ? 'w-full bg-surface-container-low h-[2px]' : 'hidden' %>">
-      <div class="filament-progress" style="<%= content_for?(:filament_width) ? yield(:filament_width) : 'width: 0%' %>"></div>
-    </div>
-
     <% if notice %>
-      <div class="bg-tertiary-fixed/10 text-tertiary px-4 py-3 mx-6 mt-4 rounded-md font-label text-sm" role="alert">
+      <div class="bg-tertiary-fixed/10 text-tertiary px-4 py-3 m-4 rounded-lg" role="alert">
         <%= notice %>
       </div>
     <% end %>
     <% if alert %>
-      <div class="bg-error-container text-on-error-container px-4 py-3 mx-6 mt-4 rounded-md font-label text-sm" role="alert">
+      <div class="bg-error-container text-on-error-container px-4 py-3 m-4 rounded-lg" role="alert">
         <%= alert %>
       </div>
     <% end %>
 
-    <main class="flex-grow flex flex-col items-center justify-center px-6 py-12 max-w-4xl mx-auto w-full">
+    <!-- Sticky navigation with glassmorphism -->
+    <nav class="bg-surface/80 backdrop-blur-xl sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 class="font-headline font-bold text-xl text-on-surface">
+          <%= link_to "Lingvize", root_path, class: "hover:text-primary transition-colors duration-300" %>
+        </h1>
+        <div class="flex gap-6">
+          <%= link_to t("dashboard.title"), dashboard_path,
+              class: "font-label text-sm font-medium hover:text-primary transition-colors duration-300 #{current_page?(controller: 'dashboard') ? 'text-primary' : 'text-on-surface-variant'}" %>
+          <%= link_to t("reviews.title"), review_path,
+              class: "font-label text-sm font-medium hover:text-primary transition-colors duration-300 #{current_page?(controller: 'review_sessions', action: 'show') ? 'text-primary' : 'text-on-surface-variant'}" %>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Filament progress bar -->
+    <div id="filament-container" class="<%= content_for?(:filament_width) ? 'w-full bg-surface-container-low h-[2px]' : 'hidden' %>">
+      <div class="filament-progress" style="<%= content_for?(:filament_width) ? yield(:filament_width) : 'width: 0%' %>"></div>
+    </div>
+
+    <main class="flex-grow flex flex-col items-center justify-center px-6 py-12 max-w-4xl mx-auto w-full pb-24 md:pb-0">
       <%= yield %>
     </main>
+
+    <!-- Mobile bottom nav -->
+    <div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-4 pt-2 md:hidden bg-surface/80 backdrop-blur-lg z-50 rounded-t-xl">
+      <%= link_to root_path, class: "flex flex-col items-center gap-1 hover:text-primary transition-colors duration-300 #{current_page?(controller: 'dashboard', action: 'index') ? 'text-primary' : 'text-on-surface-variant'}" do %>
+        <span class="material-symbols-outlined text-[24px]">dashboard</span>
+        <span class="text-[10px] font-medium">Главная</span>
+      <% end %>
+      <%= link_to review_path, class: "flex flex-col items-center gap-1 hover:text-primary transition-colors duration-300 #{current_page?(controller: 'review_sessions', action: 'show') ? 'text-primary' : 'text-on-surface-variant'}" do %>
+        <span class="material-symbols-outlined text-[24px]">menu_book</span>
+        <span class="text-[10px] font-medium">Обучение</span>
+      <% end %>
+      <%= link_to "#", class: "flex flex-col items-center gap-1 text-on-surface-variant hover:text-on-surface transition-colors duration-300", onclick: "alert('Профиль в разработке'); return false;" do %>
+        <span class="material-symbols-outlined text-[24px]">person</span>
+        <span class="text-[10px] font-medium">Профиль</span>
+      <% end %>
+    </div>
   </body>
 </html>

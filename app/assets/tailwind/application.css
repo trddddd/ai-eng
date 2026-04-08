@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Цвета — полный перечень из DESIGN.md */
+  /* Colors — full set from DESIGN.md */
   --color-surface: #f7f9fb;
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #f2f4f6;
@@ -50,12 +50,12 @@
   --color-inverse-on-surface: #eff1f3;
   --color-inverse-primary: #a9c7ff;
 
-  /* Шрифты */
+  /* Fonts */
   --font-headline: "Manrope", sans-serif;
   --font-body: "Newsreader", serif;
   --font-label: "Inter", sans-serif;
 
-  /* Скругления */
+  /* Roundedness */
   --radius-sm: 0.25rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
@@ -87,6 +87,7 @@
   }
 
   .inline-input {
+    width: 140px;
     padding: 0 0.5rem;
     border: 0;
     border-bottom: 2px solid var(--color-outline-variant);
@@ -102,3 +103,4 @@
     border-color: var(--color-primary);
   }
 }
+

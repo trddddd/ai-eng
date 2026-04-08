@@ -322,6 +322,158 @@ RSpec.describe Sentences::ImportQuizword do
     end
   end
 
+  context "when a lexeme appears as a substring inside another word" do
+    let!(:cat_lexeme) { create(:lexeme, language: en_lang, headword: "cat") }
+
+    let(:substring_html) do
+      <<~HTML
+        <!DOCTYPE html>
+        <html><body>
+        <div id="main"><div>
+          <div>header</div>
+          <div>
+            <div>1</div>
+            <div>The category is broad.</div>
+            <div>X</div>
+            <div></div>
+            <div>Категория широка.</div>
+          </div>
+          <div>footer</div>
+        </div></div>
+        </body></html>
+      HTML
+    end
+
+    before { allow(Net::HTTP).to receive(:get_response).and_return(html_response(substring_html)) }
+
+    it "does not create a sentence occurrence" do
+      expect { described_class.call }.not_to change(SentenceOccurrence, :count)
+    end
+
+    it "increments skipped rows" do
+      expect { described_class.call }.to output(/Skipped rows: 1/).to_stdout
+    end
+  end
+
+  context "when lexeme 'ago' appears inside 'agony'" do
+    let!(:ago_lexeme) { create(:lexeme, language: en_lang, headword: "ago") }
+
+    let(:agony_html) do
+      <<~HTML
+        <!DOCTYPE html>
+        <html><body>
+        <div id="main"><div>
+          <div>header</div>
+          <div>
+            <div>1</div>
+            <div>What agony it was.</div>
+            <div>X</div>
+            <div></div>
+            <div>Какая это была агония.</div>
+          </div>
+          <div>footer</div>
+        </div></div>
+        </body></html>
+      HTML
+    end
+
+    before { allow(Net::HTTP).to receive(:get_response).and_return(html_response(agony_html)) }
+
+    it "does not create a sentence occurrence" do
+      expect { described_class.call }.not_to change(SentenceOccurrence, :count)
+    end
+
+    it "increments skipped rows" do
+      expect { described_class.call }.to output(/Skipped rows: 1/).to_stdout
+    end
+  end
+
+  context "when the same lexeme appears as a whole word" do
+    let!(:ago_lexeme) { create(:lexeme, language: en_lang, headword: "ago") }
+
+    let(:ago_html) do
+      <<~HTML
+        <!DOCTYPE html>
+        <html><body>
+        <div id="main"><div>
+          <div>header</div>
+          <div>
+            <div>1</div>
+            <div>I saw it three years ago.</div>
+            <div>X</div>
+            <div></div>
+            <div>Я видел это три года назад.</div>
+          </div>
+          <div>footer</div>
+        </div></div>
+        </body></html>
+      HTML
+    end
+
+    before { allow(Net::HTTP).to receive(:get_response).and_return(html_response(ago_html)) }
+
+    it "creates a sentence occurrence with the correct lexeme" do
+      described_class.call
+
+      occurrence = SentenceOccurrence.joins(:sentence)
+                                     .find_by(sentences: { text: "I saw it three years ago." })
+
+      expect(occurrence.lexeme_id).to eq(ago_lexeme.id)
+    end
+
+    it "extracts the form preserving original case" do
+      described_class.call
+
+      occurrence = SentenceOccurrence.joins(:sentence)
+                                     .find_by(sentences: { text: "I saw it three years ago." })
+
+      expect(occurrence.form).to eq("ago")
+    end
+  end
+
+  context "when headword contains regex special characters" do
+    let!(:dont_lexeme) { create(:lexeme, language: en_lang, headword: "don't") }
+
+    let(:dont_html) do
+      <<~HTML
+        <!DOCTYPE html>
+        <html><body>
+        <div id="main"><div>
+          <div>header</div>
+          <div>
+            <div>1</div>
+            <div>I don't know.</div>
+            <div>X</div>
+            <div></div>
+            <div>Я не знаю.</div>
+          </div>
+          <div>footer</div>
+        </div></div>
+        </body></html>
+      HTML
+    end
+
+    before { allow(Net::HTTP).to receive(:get_response).and_return(html_response(dont_html)) }
+
+    it "matches the lexeme correctly" do
+      described_class.call
+
+      occurrence = SentenceOccurrence.joins(:sentence)
+                                     .find_by(sentences: { text: "I don't know." })
+
+      expect(occurrence.lexeme_id).to eq(dont_lexeme.id)
+    end
+
+    it "preserves original case in form" do
+      described_class.call
+
+      occurrence = SentenceOccurrence.joins(:sentence)
+                                     .find_by(sentences: { text: "I don't know." })
+
+      expect(occurrence.form).to eq("don't")
+    end
+  end
+
   context "when START_PAGE > END_PAGE" do
     around do |example|
       original_start = ENV.fetch("START_PAGE", nil)
