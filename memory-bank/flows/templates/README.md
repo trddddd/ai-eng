@@ -22,6 +22,7 @@ audience: humans_and_agents
 
 - [PRD-XXX: Product Initiative Name](prd/PRD-XXX.md) — компактный Product Requirements Document для инициативы, которая еще не разложена на один конкретный feature slice.
 - [UC-XXX: Use Case Name](use-case/UC-XXX.md) — канонический use case для устойчивого пользовательского или операционного сценария.
+- [FT-XXX Brief Template](feature/brief.md) — шаблон brief.md, первого артефакта feature package. Отвечает на вопрос: как агент фиксирует проблему после диалога с пользователем.
 - [FT-XXX Feature README Template](feature/README.md) — шаблон README для feature-каталога. Отвечает на вопрос: как оформить feature-level index.
 - [FT-XXX: Feature Template - Short](feature/short.md) — минимальный canonical feature для небольшой фичи. Отвечает на вопрос: как выглядит short feature-документ.
 - [FT-XXX: Feature Template - Large](feature/large.md) — canonical feature с assumptions, blockers, contracts, verify-слоем. Отвечает на вопрос: как выглядит large feature-документ.

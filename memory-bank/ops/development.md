@@ -2,7 +2,7 @@
 title: Development Environment
 doc_kind: engineering
 doc_function: canonical
-purpose: Локальная разработка Lingvize: setup, команды, DB, сервисы.
+purpose: "Локальная разработка Lingvize: setup, команды, DB, сервисы."
 derived_from:
   - ../dna/governance.md
 status: active

@@ -69,6 +69,10 @@ flowchart LR
 
 ### Bootstrap Feature Package
 
+**Предшествует bootstrap:** агент обсуждает с пользователем проблему в чате, затем создаёт GitHub Issue и `brief.md` со ссылкой на него. Номер issue становится XXX в имени пакета `FT-XXX/`.
+
+- [ ] GitHub Issue создан, номер известен
+- [ ] `brief.md` создан по шаблону `templates/feature/brief.md` и содержит ссылку на issue
 - [ ] `README.md` создан по шаблону `templates/feature/README.md`
 - [ ] `feature.md` создан по шаблону `short.md` или `large.md`
 - [ ] `implementation-plan.md` отсутствует
@@ -141,25 +145,25 @@ Canonical testing policy живёт в [../engineering/testing-policy.md](../eng
 
 ### Feature IDs
 
-| Prefix | Meaning | Used in |
-| --- | --- | --- |
-| `MET-*` | outcome-метрики | `feature.md` |
-| `REQ-*` | scope и обязательные capability | `feature.md` |
-| `NS-*` | non-scope | `feature.md` |
-| `ASM-*` | assumptions и рабочие предпосылки | `feature.md` |
-| `CON-*` | ограничения | `feature.md` |
-| `DEC-*` | blocking decisions | `feature.md` |
-| `NT-*` | do-not-touch / explicit change boundaries | `feature.md` |
-| `INV-*` | инварианты | `feature.md` |
-| `CTR-*` | контракты | `feature.md` |
-| `FM-*` | failure modes | `feature.md` |
-| `RB-*` | rollout / backout stages | `feature.md` |
-| `EC-*` | exit criteria | `feature.md` |
-| `SC-*` | acceptance scenarios | `feature.md` |
-| `NEG-*` | negative / edge test cases | `feature.md` |
-| `CHK-*` | проверки | `feature.md`, `implementation-plan.md` |
-| `EVID-*` | evidence-артефакты | `feature.md`, `implementation-plan.md` |
-| `RJ-*` | rejection rules | `feature.md`, `implementation-plan.md` |
+| Prefix   | Meaning                                   | Used in                                |
+| -------- | ----------------------------------------- | -------------------------------------- |
+| `MET-*`  | outcome-метрики                           | `feature.md`                           |
+| `REQ-*`  | scope и обязательные capability           | `feature.md`                           |
+| `NS-*`   | non-scope                                 | `feature.md`                           |
+| `ASM-*`  | assumptions и рабочие предпосылки         | `feature.md`                           |
+| `CON-*`  | ограничения                               | `feature.md`                           |
+| `DEC-*`  | blocking decisions                        | `feature.md`                           |
+| `NT-*`   | do-not-touch / explicit change boundaries | `feature.md`                           |
+| `INV-*`  | инварианты                                | `feature.md`                           |
+| `CTR-*`  | контракты                                 | `feature.md`                           |
+| `FM-*`   | failure modes                             | `feature.md`                           |
+| `RB-*`   | rollout / backout stages                  | `feature.md`                           |
+| `EC-*`   | exit criteria                             | `feature.md`                           |
+| `SC-*`   | acceptance scenarios                      | `feature.md`                           |
+| `NEG-*`  | negative / edge test cases                | `feature.md`                           |
+| `CHK-*`  | проверки                                  | `feature.md`, `implementation-plan.md` |
+| `EVID-*` | evidence-артефакты                        | `feature.md`, `implementation-plan.md` |
+| `RJ-*`   | rejection rules                           | `feature.md`, `implementation-plan.md` |
 
 ### Plan IDs
 
