@@ -1,7 +1,7 @@
 # Brief: CI сломан — lint, smoke-тесты и coverage не работают
 
 **Issue:** trddddd/ai-eng#—
-**State:** IN PROGRESS
+**State:** CLOSED
 
 ## Проблема
 
