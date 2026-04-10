@@ -80,6 +80,10 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
   **Что:** Ветки, коммиты, PR, conventional commits.
   **Читать, чтобы:** правильно оформить изменения.
 
+- [engineering/DESIGN.md](engineering/DESIGN.md)
+  **Что:** Дизайн-система "The Editorial Scholar": цвета, типографика, компоненты, surface hierarchy.
+  **Читать, чтобы:** работать с UI — верстать компоненты, применять токены, соблюдать визуальные правила.
+
 ### Операции
 
 - [ops/README.md](ops/README.md)

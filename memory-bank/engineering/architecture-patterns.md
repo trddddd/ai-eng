@@ -163,14 +163,14 @@ Domain logic (FSRS scheduling, accuracy, recall quality) корректно жи
 
 При реализации фич и ревью используй команды `layered-rails`:
 
-| Команда | Когда |
-| --- | --- |
-| `/layers:review` | При ревью кода на архитектурные нарушения |
-| `/layers:spec-test` | Проверить конкретный файл на specification test |
-| `/layers:analyze` | Полный анализ кодовой базы |
+| Команда                     | Когда                                             |
+| --------------------------- | ------------------------------------------------- |
+| `/layers:review`            | При ревью кода на архитектурные нарушения         |
+| `/layers:spec-test`         | Проверить конкретный файл на specification test   |
+| `/layers:analyze`           | Полный анализ кодовой базы                        |
 | `/layers:analyze:callbacks` | Оценить callbacks, найти кандидатов на extraction |
-| `/layers:analyze:gods` | Найти god objects (churn × complexity) |
-| `/layers:gradual [goal]` | Спланировать постепенное внедрение паттернов |
+| `/layers:analyze:gods`      | Найти god objects (churn × complexity)            |
+| `/layers:gradual [goal]`    | Спланировать постепенное внедрение паттернов      |
 
 ## Model Organization
 

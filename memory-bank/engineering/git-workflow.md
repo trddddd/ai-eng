@@ -2,7 +2,7 @@
 title: Git Workflow
 doc_kind: engineering
 doc_function: convention
-purpose: Git conventions Lingvize: ветки, коммиты, PR.
+purpose: Шаблон git workflow документа. После копирования зафиксируй реальные branch names, commit rules и PR expectations проекта.
 derived_from:
   - ../dna/governance.md
 status: active

@@ -15,11 +15,11 @@ audience: humans_and_agents
 
 - **Public web** — server-rendered Rails views (ERB + Hotwire). Код: `app/views/`, `app/javascript/`.
 - Boundary с backend: контроллеры рендерят HTML, Turbo Streams для partial updates, Stimulus для интерактивности.
-- Canonical owner для design decisions: `DESIGN.md` (The Editorial Scholar).
+- Canonical owner для design decisions: `memory-bank/engineering/DESIGN.md` (The Editorial Scholar).
 
 ## Design System: The Editorial Scholar
 
-Source of truth для цветов, типографики и компонентов — `DESIGN.md` в корне проекта.
+Source of truth для цветов, типографики и компонентов — `memory-bank/engineering/DESIGN.md`.
 
 ### Ключевые принципы
 

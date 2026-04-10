@@ -2,7 +2,7 @@
 title: Coding Style
 doc_kind: engineering
 doc_function: convention
-purpose: Coding conventions Lingvize: Ruby/Rails, Tailwind, SQL. Читать при написании или ревью кода.
+purpose: "Coding conventions Lingvize: Ruby/Rails, Tailwind, SQL. Читать при написании или ревью кода."
 derived_from:
   - ../dna/governance.md
 status: active
@@ -33,7 +33,7 @@ audience: humans_and_agents
 
 ## Frontend (Tailwind + Hotwire)
 
-- **Styling:** Tailwind utility classes. Design tokens определены в `DESIGN.md`.
+- **Styling:** Tailwind utility classes. Design tokens определены в `memory-bank/engineering/DESIGN.md`.
 - **Components:** ERB partials. Stimulus controllers для интерактивности.
 - **Turbo:** Turbo Streams для partial updates. Не смешивать Turbo и manual JS DOM manipulation.
 - **Icons:** Material Symbols Outlined (Google Fonts).

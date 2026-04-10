@@ -63,5 +63,5 @@ canonical_for:
 ## Source Documents
 
 - `PROJECT.md` — краткое описание продукта (upstream для этого документа).
-- `DESIGN.md` — дизайн-система "The Editorial Scholar".
+- `memory-bank/engineering/DESIGN.md` — дизайн-система "The Editorial Scholar".
 - Внешние спецификации: [FSRS Algorithm](https://expertium.github.io/Algorithm.html), CEFR levels.

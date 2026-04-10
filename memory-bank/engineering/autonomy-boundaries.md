@@ -2,7 +2,7 @@
 title: Autonomy Boundaries
 doc_kind: engineering
 doc_function: canonical
-purpose: Границы автономии агента в Lingvize: автопилот, супервизия, эскалация.
+purpose: "Границы автономии агента: что можно делать без подтверждения, где нужна супервизия, когда эскалировать."
 derived_from:
   - ../dna/governance.md
 canonical_for:

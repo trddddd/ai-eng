@@ -2,7 +2,7 @@
 title: Testing Policy
 doc_kind: engineering
 doc_function: canonical
-purpose: Testing policy Lingvize: RSpec, SimpleCov, FactoryBot, CI. Читать перед написанием или ревью тестов.
+purpose: "Testing policy Lingvize: RSpec, SimpleCov, FactoryBot, CI. Читать перед написанием или ревью тестов."
 derived_from:
   - ../dna/governance.md
   - ../flows/feature-flow.md
