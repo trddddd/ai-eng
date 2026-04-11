@@ -29,6 +29,8 @@ audience: humans_and_agents
 - Fix: `fix/short-description`
 - Удаляются после merge в main.
 
+**Правило:** перед первым изменением кода агент создаёт ветку автономно (`git checkout -b feat/...`). Это часть gate "Plan Ready → Execution" в `flows/feature-flow.md`. Работа напрямую в `main` недопустима.
+
 ## Pull Requests
 
 - Перед PR: `bundle exec rspec` + `bundle exec rubocop` зелёные

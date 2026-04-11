@@ -9,17 +9,17 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it "redirects to dashboard if already logged in" do
+    it "redirects to review if already logged in" do
       post login_path, params: { email: user.email, password: "password123" }
       get login_path
-      expect(response).to redirect_to(dashboard_path)
+      expect(response).to redirect_to(review_path)
     end
   end
 
   describe "POST /login" do
     it "logs in with valid credentials" do
       post login_path, params: { email: user.email, password: "password123" }
-      expect(response).to redirect_to(dashboard_path)
+      expect(response).to redirect_to(review_path)
     end
 
     it "renders new with invalid credentials" do

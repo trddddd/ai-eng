@@ -7,18 +7,18 @@ RSpec.describe "Registrations", type: :request do
       expect(response).to have_http_status(:ok)
     end
 
-    it "redirects to dashboard if already logged in" do
+    it "redirects to review if already logged in" do
       user = create(:user)
       post login_path, params: { email: user.email, password: "password123" }
       get register_path
-      expect(response).to redirect_to(dashboard_path)
+      expect(response).to redirect_to(review_path)
     end
   end
 
   describe "POST /register" do
-    it "creates account and redirects to dashboard" do
+    it "creates account and redirects to review" do
       post register_path, params: { user: { email: "new@example.com", password: "password123", password_confirmation: "password123" } }
-      expect(response).to redirect_to(dashboard_path)
+      expect(response).to redirect_to(review_path)
     end
 
     it "renders new with invalid params" do
@@ -49,9 +49,9 @@ RSpec.describe "Registrations", type: :request do
         allow(Cards::BuildStarterDeck).to receive(:call).and_raise(StandardError, "oops")
       end
 
-      it "still creates the user and redirects to dashboard" do
+      it "still creates the user and redirects to review" do
         post register_path, params: { user: { email: "new@example.com", password: "password123", password_confirmation: "password123" } }
-        expect(response).to redirect_to(dashboard_path)
+        expect(response).to redirect_to(review_path)
         expect(User.find_by(email: "new@example.com")).to be_present
       end
     end
