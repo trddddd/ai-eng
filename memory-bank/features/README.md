@@ -32,6 +32,7 @@ audience: humans_and_agents
 | FIX-001 | Word Matching Fix (word boundaries) | done | #17 | main |
 | FIX-002 | CI Cleanup (drop fork CI, add coverage) | done | #20 | main |
 | FT-023 | Direct Landing on Study Content | done | #23 | main |
+| FT-025 | Dashboard MVP: progress cards | done | #25 | feat/025-dashboard-progress |
 
 ## Legacy Note
 

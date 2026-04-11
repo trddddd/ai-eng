@@ -24,6 +24,10 @@ template_target_path: ../../../features/FT-XXX/implementation-plan.md
 
 Создавай этот документ только после того, как sibling `feature.md` переведен в `status: active`. Пока план только формируется, сам `implementation-plan.md` может оставаться в `status: draft`; до перехода feature в `delivery_status: in_progress` план должен стать `status: active`.
 
+**Layered Rails обязательные проверки:**
+1. При планировании фичи — запуск `/layers:spec-test` на затрагиваемых файлах для рекомендаций по тест-стратегии с учётом слоёв
+2. После написания кода — запуск `/layers:review` на новых/изменённых файлах для проверки архитектурных границ
+
 Когда feature переходит в `delivery_status: done` или `delivery_status: cancelled`, `implementation-plan.md` архивируется, если он больше не используется как рабочий execution-документ.
 
 Документ должен быть исполнимым без дополнительного толкования. Если шаг нельзя связать с canonical IDs, артефактом, проверкой или явной ручной процедурой, шаг описан недостаточно.
@@ -73,6 +77,8 @@ must_not_define:
 
 Какие test surfaces должны быть обновлены по мере реализации. Этот раздел фиксирует expected automated coverage, required local/CI gates и manual-only exceptions для change surface, не переопределяя canonical test cases из `feature.md`.
 
+**Layered Rails Test Strategy:** При планировании обязателен запуск `/layers:spec-test` на всех затрагиваемых файлах для получения рекомендаций по тест-стратегии с учётом слоёв.
+
 | Test surface | Canonical refs | Existing coverage | Planned automated coverage | Required local suites / commands | Required CI suites / jobs | Manual-only gap / justification | Manual-only approval ref |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `path/or/behavior` | `REQ-01`, `SC-01`, `NEG-01`, `CHK-01` | Что покрыто сейчас | Какой suite, test type или deterministic check обязаны добавить или обновить | Какие команды или suites обязаны быть зелёными локально | Какие jobs или suites обязаны быть зелёными в CI | Что пока остается manual-only и почему | `AG-01` / review link / `none` |
@@ -91,6 +97,7 @@ must_not_define:
 
 | Area | Contract | Used by | Failure symptom |
 | --- | --- | --- | --- |
+| git | Feature branch `feat/XXX-...` активна (`git branch --show-current` не `main`) | All steps | Агент работает прямо в `main` — стоп, создать ветку: `git checkout -b feat/XXX-short-desc` |
 | setup | Какая подготовка среды обязательна | `STEP-01`, `STEP-02` | По какому симптому понятно, что среда невалидна |
 | test | Какая команда или процедура считается эталонной для verify на этом этапе | `CHK-01` | Что считается недостоверным verify |
 | access / network / secrets | Какие доступы, домены, ключи или sandbox assumptions нужны | `STEP-03` | Когда работа должна остановиться и уйти на эскалацию |
@@ -101,6 +108,7 @@ must_not_define:
 
 | Precondition ID | Canonical ref | Required state | Used by steps | Blocks start |
 | --- | --- | --- | --- | --- |
+| `PRE-GIT` | `engineering/git-workflow.md` | Feature branch `feat/XXX-short-desc` создана от `main`; `git branch --show-current` → `feat/...`, не `main` | All steps | **yes** — создать автономно до первого изменения кода: `git checkout -b feat/XXX-short-desc` |
 | `PRE-01` | `ASM-01` / `DEC-01` / `CON-01` / ADR path | Какой state upstream считается допустимым для старта | `STEP-01`, `STEP-02` | yes / no |
 
 ## Workstreams
@@ -123,9 +131,13 @@ must_not_define:
 
 Опиши выполнение как атомарные шаги. Каждый шаг должен быть достаточно маленьким, чтобы его можно было проверить и при необходимости откатить или остановить без расползания change surface.
 
+**Обязательный Layered Rails шаг:** При планировании фичи — запустить `/layers:spec-test` на всех затрагиваемых файлах для получения рекомендаций по тест-стратегии с учётом слоёв.
+
 | Step ID | Actor | Implements | Goal | Touchpoints | Artifact | Verifies | Evidence IDs | Check command / procedure | Blocked by | Needs approval | Escalate if |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `STEP-01` | human / agent / either | `REQ-01`, `REQ-02`, `CTR-01` | Что делаем на этом шаге | Какие файлы, сервисы или данные трогаем | Что должно появиться после шага | `CHK-01` | `EVID-01` | Как подтверждаем завершение | `PRE-01`, `OQ-01` | `AG-01` / `none` | Когда нельзя продолжать без эскалации |
+| `STEP-LAYERS-SPEC-TEST` | agent | - | Получение рекомендаций по тест-стратегии с учётом слоёв | Затрагиваемые файлы (controllers, operations, models) | Рекомендации по тест-стратегии | - | `EVID-LAYERS-SPEC` | `/layers:spec-test` на всех затрагиваемых файлах | - | `none` | - |
+| `STEP-01` | human / agent / either | `REQ-01`, `REQ-02`, `CTR-01` | Что делаем на этом шаге | Какие файлы, сервисы или данные трогаем | Что должно появиться после шага | `CHK-01` | `EVID-01` | Как подтверждаем завершение | `PRE-01`, `OQ-01`, `STEP-LAYERS-SPEC-TEST` | `AG-01` / `none` | Когда нельзя продолжать без эскалации |
+| `STEP-LAYERS-REVIEW` | agent | - | Проверка архитектурных границ Layered Rails | Новые/изменённые файлы после реализации | Ревью-отчёт без критических нарушений | `CP-LAYERS` | `EVID-LAYERS` | `/layers:review` на всех новых/изменённых файлах | `All implementation steps` | `none` | При критических нарушениях — эскалация в ADR |
 
 ## Parallelizable Work
 
@@ -138,9 +150,12 @@ must_not_define:
 
 Какие промежуточные точки должны быть пройдены до rollout или handoff.
 
+**Layered Rails Review Checkpoint:** После написания кода обязателен запуск `/layers:review` на всех новых/изменённых файлах для проверки архитектурных границ (нет ли прямых обращений к моделям в контроллере, бизнес-логики вне operations layer и т.д.).
+
 | Checkpoint ID | Refs | Condition | Evidence IDs |
 | --- | --- | --- | --- |
 | `CP-01` | `STEP-01`, `CHK-01` | Какой промежуточный state должен быть доказан | `EVID-01` |
+| `CP-LAYERS` | `All steps` | `/layers:review` пройден без критических нарушений архитектурных границ | `EVID-LAYERS` |
 
 ## Execution Risks
 
@@ -161,4 +176,8 @@ must_not_define:
 ## Готово для приемки
 
 Какие условия должны выполниться, чтобы считать план исчерпанным и перейти к финальной приемке по секции `Verify` в sibling `feature.md`.
+
+**Обязательные Layered Rails условия:**
+- `EVID-LAYERS-SPEC`: `/layers:spec-test` выполнен на всех затрагиваемых файлах при планировании
+- `EVID-LAYERS`: `/layers:review` выполнен на всех новых/изменённых файлах после реализации, критических нарушений архитектурных границ нет
 ```
