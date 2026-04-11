@@ -9,6 +9,8 @@ class Card < ApplicationRecord
     where(user: user, mastered_at: nil).where(due: ..now)
   }
 
+  scope :learned, -> { where("state = ? OR mastered_at IS NOT NULL", STATE_REVIEW) }
+
   STATE_NEW        = 0
   STATE_LEARNING   = 1
   STATE_REVIEW     = 2

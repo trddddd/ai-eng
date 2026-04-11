@@ -1,18 +1,61 @@
-<div class="max-w-4xl mx-auto px-4 py-8">
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold text-gray-900">
-      <%= t("dashboard.title") %>
-    </h1>
-    <%= button_to t("dashboard.logout"), logout_path, method: :delete,
-          class: "py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 cursor-pointer" %>
-  </div>
+<div class="max-w-7xl mx-auto px-6 py-12">
 
-  <p class="text-gray-700">
-    <%= t("dashboard.welcome", email: current_user.email) %>
-  </p>
+  <header class="mb-12">
+    <h1 class="font-body text-4xl md:text-5xl text-on-surface italic mb-2 leading-tight">
+      <%= t("dashboard.welcome", email: current_user.email) %>
+    </h1>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div class="bg-surface-container-low rounded-xl p-6 flex items-center justify-between">
+      <div>
+        <p class="font-label text-xs text-on-surface-variant mb-1 uppercase tracking-widest"><%= t("dashboard.streak_label") %></p>
+        <h3 class="font-headline text-2xl font-bold"><%= t("dashboard.streak_value", count: @progress.streak) %></h3>
+      </div>
+      <div class="w-12 h-12 bg-error-container/30 rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-low rounded-xl p-6 flex items-center justify-between">
+      <div>
+        <p class="font-label text-xs text-on-surface-variant mb-1 uppercase tracking-widest"><%= t("dashboard.words_learned_label") %></p>
+        <h3 class="font-headline text-2xl font-bold"><%= @progress.words_learned %></h3>
+      </div>
+      <div class="w-12 h-12 bg-primary-fixed/30 rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary">menu_book</span>
+      </div>
+    </div>
+
+    <% daily_pct = (@progress.daily_reviews.to_f / @progress.daily_goal).clamp(0, 1) %>
+    <% circumference = 125.6 %>
+    <% dashoffset = (circumference * (1 - daily_pct)).round(1) %>
+    <div class="bg-surface-container-low rounded-xl p-6 flex items-center justify-between">
+      <div>
+        <p class="font-label text-xs text-on-surface-variant mb-1 uppercase tracking-widest"><%= t("dashboard.daily_goal_label") %></p>
+        <h3 class="font-headline text-2xl font-bold"><%= @progress.daily_reviews %> / <%= @progress.daily_goal %></h3>
+      </div>
+      <div class="relative w-12 h-12">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 48 48">
+          <circle class="text-surface-container-high" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="4"/>
+          <circle class="text-tertiary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor"
+            stroke-dasharray="<%= circumference %>"
+            stroke-dashoffset="<%= dashoffset %>"
+            stroke-width="4"
+            stroke-linecap="round"/>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <div class="mt-8">
     <%= link_to t("reviews.title"), review_path,
-        class: "inline-block bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 text-lg" %>
+        class: "font-label font-semibold text-primary hover:underline" %>
   </div>
+
 </div>

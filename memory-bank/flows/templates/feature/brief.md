@@ -23,8 +23,10 @@ Brief — входная точка feature package. Фиксирует проб
 4. **Агент прогоняет бриф через ревью (см. ниже) и фиксирует замечания.**
 5. Если замечания есть — агент исправляет `brief.md` и повторяет ревью.
 6. Только после «0 замечаний» — агент создаёт GitHub Issue.
-7. Агент удаляет `brief.md` оставляя только GitHub Issue.
-8. Агент bootstraps feature package: `README.md` + `feature.md` (draft).
+7. ⛔ **STOP-gate.** Агент сообщает пользователю номер issue и явно просит начать новую сессию с Opus для bootstrapping:
+   > Issue #XXX создан. Для bootstrapping feature package начни новую сессию командой `/model opus` (или `claude --model claude-opus-4-6`), чтобы получить чистый контекст и более качественный `feature.md`.
+8. **[новая сессия, Opus]** Агент удаляет `brief.md`, оставляя только GitHub Issue.
+9. **[новая сессия, Opus]** Агент bootstraps feature package: `README.md` + `feature.md` (draft).
 
 ## Ревью брифа
 

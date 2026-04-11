@@ -31,6 +31,14 @@ ru:
     title: "Главная"
     welcome: "Добро пожаловать, %{email}!"
     logout: "Выйти"
+    streak_label: "Серия дней"
+    streak_value:
+      one: "1 день"
+      few: "%{count} дня"
+      many: "%{count} дней"
+      other: "%{count} дня"
+    words_learned_label: "Слов выучено"
+    daily_goal_label: "Цель на сегодня"
 
   reviews:
     title: "Повторение"

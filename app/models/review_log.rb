@@ -35,6 +35,8 @@ class ReviewLog < ApplicationRecord
   validates :attempts, numericality: { greater_than: 0 }
   validates :answer_accuracy, numericality: { in: 0.0..1.0 }, allow_nil: true
 
+  scope :for_user, ->(user) { joins(:card).where(cards: { user_id: user.id }) }
+
   def self.compute_accuracy(answer_text, expected)
     return 0.0 if answer_text.blank?
 
@@ -71,5 +73,32 @@ class ReviewLog < ApplicationRecord
 
   def self.compute_rating(recall_quality)
     RECALL_TO_RATING.fetch(recall_quality)
+  end
+
+  def self.streak_for(user, now: Time.current)
+    dates = distinct_review_dates_for(user)
+    today = now.to_date
+    return 0 unless dates.first == today
+
+    count = 0
+    expected = today
+    dates.each do |date|
+      break if date != expected
+
+      count += 1
+      expected -= 1
+    end
+    count
+  end
+
+  def self.distinct_review_dates_for(user)
+    for_user(user)
+      .order(Arel.sql("DATE(reviewed_at) DESC"))
+      .pluck(Arel.sql("DATE(reviewed_at)"))
+      .uniq
+  end
+
+  def self.unique_cards_reviewed_on(user, date)
+    for_user(user).where(reviewed_at: date.all_day).distinct.count(:card_id)
   end
 end

@@ -16,4 +16,5 @@ audience: humans_and_agents
 - [Autonomy Boundaries](autonomy-boundaries.md) — границы автономии агента: автопилот, супервизия, эскалация.
 - [Coding Style](coding-style.md) — Ruby/Rails конвенции, Zeitwerk, RuboCop, Tailwind, SQL/migrations.
 - [Git Workflow](git-workflow.md) — ветки, коммиты, PR, conventional commits.
+- [Tech Debt Registry](tech-debt.md) — реестр известного техдолга с условиями активации и планами исправления.
 - [ADR](../adr/README.md) — Architecture Decision Records проекта.

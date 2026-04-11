@@ -1,0 +1,31 @@
+---
+title: "FT-025: Feature Package"
+doc_kind: feature
+doc_function: index
+purpose: "Bootstrap-safe навигация по документации фичи. Читать, чтобы сначала перейти к canonical `feature.md`, а optional derived docs добавлять только после их появления."
+derived_from:
+  - ../../dna/governance.md
+  - feature.md
+status: active
+audience: humans_and_agents
+---
+
+# FT-025: Feature Package
+
+## О разделе
+
+Каталог feature package хранит canonical `feature.md`, а optional derived/external routes добавляются только после появления соответствующих документов. Сначала читай `feature.md`, затем расширяй routing по мере появления execution и decision artifacts.
+
+## Аннотированный индекс
+
+- [`feature.md`](feature.md)
+  Читать, когда нужно: открыть instantiated canonical feature-документ сразу после bootstrap нового feature package.
+  Отвечает на вопрос: где находятся scope, design, verify, blockers и canonical IDs для этой фичи.
+
+- [`implementation-plan.md`](implementation-plan.md)
+  Читать, когда нужно: посмотреть порядок работ, discovery context и test strategy.
+  Отвечает на вопрос: какие шаги, в каком порядке, какие файлы трогаем и как проверяем.
+
+- [`reference-dashboard.html`](reference-dashboard.html)
+  Читать, когда нужно: посмотреть визуальный референс dashboard в браузере (`open reference-dashboard.html`).
+  Отвечает на вопрос: как должны выглядеть progress cards, какие элементы in/out of scope. Аннотирован scope-маркерами (REQ-01..05, NS-*).

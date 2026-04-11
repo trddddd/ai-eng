@@ -30,6 +30,15 @@
 en:
   hello: "Hello world"
 
+  dashboard:
+    welcome: "Welcome, %{email}!"
+    streak_label: "Current Streak"
+    streak_value:
+      one: "1 Day"
+      other: "%{count} Days"
+    words_learned_label: "Words Learned"
+    daily_goal_label: "Daily Goal"
+
   reviews:
     title: "Review"
     placeholder: "Type the word..."
