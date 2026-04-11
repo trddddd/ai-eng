@@ -96,6 +96,7 @@
     font-style: inherit;
     text-align: center;
     outline: none;
+    caret-color: transparent;
     transition: border-color 0.3s;
   }
 

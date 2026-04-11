@@ -42,7 +42,7 @@
       <% parts = card.sentence.text.split(/#{Regexp.escape(card.form)}/i, 2) %>
       <% if parts.length == 2 && parts[0] && parts[1] %>
         <p class="font-body text-xl md:text-2xl text-on-surface-variant italic leading-relaxed max-w-2xl">
-          "<%= parts[0] %><span class="inline-input-wrapper">
+          <%= parts[0] %><span class="inline-input-wrapper">
             <input type="text"
                    autofocus
                    autocomplete="off"
@@ -50,12 +50,12 @@
                    class="inline-input"
                    data-review-target="input"
                    data-action="input->review#onInput keydown->review#trackKey" />
-          </span><%= parts[1] %>"
+          </span><%= parts[1] %>
         </p>
       <% else %>
         <%# Fallback: regular display %>
         <p class="font-body text-xl md:text-2xl text-on-surface-variant italic leading-relaxed max-w-2xl mb-4">
-          "<%= card.cloze_text %>"
+          <%= card.cloze_text %>
         </p>
         <input type="text"
                autofocus
