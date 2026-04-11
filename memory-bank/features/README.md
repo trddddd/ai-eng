@@ -31,6 +31,7 @@ audience: humans_and_agents
 | FT-008 | Design System & UI Redesign | done | #16 | main |
 | FIX-001 | Word Matching Fix (word boundaries) | done | #17 | main |
 | FIX-002 | CI Cleanup (drop fork CI, add coverage) | done | #20 | main |
+| FT-023 | Direct Landing on Study Content | done | #23 | main |
 
 ## Legacy Note
 

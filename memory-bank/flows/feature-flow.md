@@ -69,10 +69,10 @@ flowchart LR
 
 ### Bootstrap Feature Package
 
-**Предшествует bootstrap:** агент обсуждает с пользователем проблему в чате, затем создаёт GitHub Issue и `brief.md` со ссылкой на него. Номер issue становится XXX в имени пакета `FT-XXX/`.
+**Предшествует bootstrap:** агент обсуждает с пользователем проблему в чате, затем создаёт GitHub Issue со ссылкой на него. Номер issue становится XXX в имени пакета `FT-XXX/`.
 
+- [ ] GitHub Issue прошёл ревью по критериям из `templates/feature/brief.md` — результат «0 замечаний»
 - [ ] GitHub Issue создан, номер известен
-- [ ] `brief.md` создан по шаблону `templates/feature/brief.md` и содержит ссылку на issue
 - [ ] `README.md` создан по шаблону `templates/feature/README.md`
 - [ ] `feature.md` создан по шаблону `short.md` или `large.md`
 - [ ] `implementation-plan.md` отсутствует
@@ -96,6 +96,7 @@ flowchart LR
 
 ### Plan Ready → Execution
 
+- [ ] feature branch создана от `main`: `feat/<short-description>` (например `feat/023-direct-landing`); агент создаёт ветку автономно без подтверждения
 - [ ] `feature.md` → `delivery_status: in_progress`
 - [ ] `implementation-plan.md` → `status: active`
 - [ ] `implementation-plan.md` фиксирует test strategy: automated coverage surfaces, required local/CI suites

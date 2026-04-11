@@ -1,6 +1,6 @@
 class SessionsController < ApplicationController
   def new
-    redirect_to dashboard_path if logged_in?
+    redirect_to review_path if logged_in?
   end
 
   def create
@@ -24,6 +24,6 @@ class SessionsController < ApplicationController
   def login(user)
     reset_session
     session[:user_id] = user.id
-    redirect_to dashboard_path, notice: t("sessions.flash.success")
+    redirect_to review_path, notice: t("sessions.flash.success")
   end
 end
