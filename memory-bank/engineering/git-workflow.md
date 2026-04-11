@@ -40,10 +40,8 @@ audience: humans_and_agents
 
 ## Feature Artifacts в Commits
 
-- Brief, spec, plan включаются в коммиты вместе с кодом
-- Перед commit: проверить `git status` на наличие untracked файлов, относящихся к фиче (memory-bank docs, plan, brief) — не пропускать их
-- После merge: закрыть GitHub issue + обновить brief (`status: CLOSED`)
+- Feature package (README.md, feature.md, implementation-plan.md) включается в коммиты вместе с кодом
+- Перед commit: проверить `git status` на наличие untracked файлов из `memory-bank/features/FT-XXX/` — не пропускать их
+- После merge: закрыть GitHub issue если не закрылся автоматически через `Closes #N`
   - `gh issue close <N> --comment "Реализовано в #<PR>. <одна фраза>"`
-  - Найти brief: `grep -r "#N" memory-bank/features/` (номер директории НЕ обязательно совпадает с issue)
-  - Обновить `State:` → `CLOSED`
-  - Commit: `docs(feat-NNN): close brief — feature shipped`
+  - Brief хранится в GitHub Issue — отдельного `brief.md` нет (удаляется после создания issue, см. `flows/templates/feature/brief.md`)
