@@ -5,7 +5,7 @@ doc_function: derived
 purpose: "Execution-план реализации FT-027. Убрать кавычки и мигающий caret в cloze-карточке."
 derived_from:
   - feature.md
-status: active
+status: archived
 audience: humans_and_agents
 must_not_define:
   - ft_027_scope

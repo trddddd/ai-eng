@@ -4,7 +4,7 @@ doc_kind: feature
 doc_function: canonical
 purpose: "Убрать литеральные кавычки вокруг cloze-предложения и скрыть мигающий текстовый caret в inline-инпуте на review-карточке."
 status: active
-delivery_status: in_progress
+delivery_status: done
 audience: humans_and_agents
 must_not_define:
   - implementation_sequence
