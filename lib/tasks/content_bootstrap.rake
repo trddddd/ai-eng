@@ -42,9 +42,9 @@ namespace :content_bootstrap do
       end
       tmp = dir.join("#{name}.bz2")
       puts "Downloading #{url}..."
-      system!("curl -L --progress-bar #{url} -o #{tmp}")
+      system("curl -L --progress-bar #{url} -o #{tmp}") || abort("curl failed for #{url}")
       puts "Extracting #{name}..."
-      system!("bzip2 -d #{tmp}")
+      system("bzip2 -d #{tmp}") || abort("bzip2 failed for #{tmp}")
       puts "#{name} ready (#{(File.size(dest) / 1_048_576.0).round(1)} MB)"
     end
 
@@ -54,9 +54,9 @@ namespace :content_bootstrap do
     else
       tmp_bz2 = dir.join("links.tar.bz2")
       puts "Downloading links.tar.bz2 (large file, ~200 MB compressed)..."
-      system!("curl -L --progress-bar https://downloads.tatoeba.org/exports/links.tar.bz2 -o #{tmp_bz2}")
+      system("curl -L --progress-bar https://downloads.tatoeba.org/exports/links.tar.bz2 -o #{tmp_bz2}") || abort("curl failed for links.tar.bz2")
       puts "Extracting links.csv..."
-      system!("tar -xjf #{tmp_bz2} -C #{dir}")
+      system("tar -xjf #{tmp_bz2} -C #{dir}") || abort("tar failed")
       FileUtils.rm_f(tmp_bz2)
       puts "links.csv ready (#{(File.size(links) / 1_048_576.0).round(1)} MB)"
     end
