@@ -25,6 +25,45 @@ namespace :content_bootstrap do
     Sentences::ImportQuizword.call
   end
 
+  desc "Download Tatoeba per-language TSV files to db/data/tatoeba/ (requires curl + bzip2)"
+  task download_tatoeba: :environment do
+    dir = Rails.root.join("db/data/tatoeba")
+    FileUtils.mkdir_p(dir)
+
+    files = {
+      "eng_sentences.tsv" => "https://downloads.tatoeba.org/exports/per_language/eng/eng_sentences.tsv.bz2",
+      "rus_sentences.tsv" => "https://downloads.tatoeba.org/exports/per_language/rus/rus_sentences.tsv.bz2"
+    }
+    files.each do |name, url|
+      dest = dir.join(name)
+      if dest.exist?
+        puts "#{name} already exists, skipping"
+        next
+      end
+      tmp = dir.join("#{name}.bz2")
+      puts "Downloading #{url}..."
+      system!("curl -L --progress-bar #{url} -o #{tmp}")
+      puts "Extracting #{name}..."
+      system!("bzip2 -d #{tmp}")
+      puts "#{name} ready (#{(File.size(dest) / 1_048_576.0).round(1)} MB)"
+    end
+
+    links = dir.join("links.csv")
+    if links.exist?
+      puts "links.csv already exists, skipping"
+    else
+      tmp_bz2 = dir.join("links.tar.bz2")
+      puts "Downloading links.tar.bz2 (large file, ~200 MB compressed)..."
+      system!("curl -L --progress-bar https://downloads.tatoeba.org/exports/links.tar.bz2 -o #{tmp_bz2}")
+      puts "Extracting links.csv..."
+      system!("tar -xjf #{tmp_bz2} -C #{dir}")
+      FileUtils.rm_f(tmp_bz2)
+      puts "links.csv ready (#{(File.size(links) / 1_048_576.0).round(1)} MB)"
+    end
+
+    puts "\nAll Tatoeba files ready in #{dir}"
+  end
+
   desc "Import sentences from Tatoeba CSV files in db/data/tatoeba/ (FT-029, replaces import_quizword)"
   task import_tatoeba: :environment do
     Sentences::ImportTatoeba.call

@@ -40,12 +40,31 @@ module Sentences
       Lexeme.pluck(:id, :headword).to_h { |id, hw| [hw.downcase, id] }
     end
 
-    def sentences_file = Rails.root.join("db/data/tatoeba/sentences.csv")
-    def links_file = Rails.root.join("db/data/tatoeba/links.csv")
+    def data_dir          = Rails.root.join("db/data/tatoeba")
+    def sentences_file    = data_dir.join("sentences.csv")       # combined: id<TAB>lang<TAB>text
+    def eng_sentences_file = data_dir.join("eng_sentences.tsv")  # per-language: id<TAB>lang<TAB>text
+    def rus_sentences_file = data_dir.join("rus_sentences.tsv")  # per-language: id<TAB>lang<TAB>text
+    def links_file        = data_dir.join("links.csv")
 
+    # Supports two file layouts:
+    #   1. Combined: single sentences.csv with all languages (from sentences.tar.bz2)
+    #   2. Per-language: eng_sentences.tsv + rus_sentences.tsv (lighter download)
     def parse_sentences_file
-      return [{}, {}] unless sentences_file.exist?
+      if sentences_file.exist?
+        parse_combined_file
+      elsif eng_sentences_file.exist? && rus_sentences_file.exist?
+        [parse_lang_file(eng_sentences_file), parse_lang_file(rus_sentences_file)]
+      else
+        # rubocop:disable Rails/Output
+        warn "[ImportTatoeba] SKIP: Tatoeba data files not found in #{data_dir}. " \
+             "Download eng_sentences.tsv + rus_sentences.tsv + links.csv from " \
+             "https://downloads.tatoeba.org/exports/per_language/ and https://downloads.tatoeba.org/exports/links.tar.bz2"
+        # rubocop:enable Rails/Output
+        [{}, {}]
+      end
+    end
 
+    def parse_combined_file
       eng = {}
       rus = {}
       CSV.foreach(sentences_file, col_sep: "\t") do |row|
@@ -61,9 +80,27 @@ module Sentences
       [eng, rus]
     end
 
+    # Per-language TSV format from Tatoeba: id<TAB>lang<TAB>text (same columns, one language)
+    def parse_lang_file(file)
+      result = {}
+      CSV.foreach(file, col_sep: "\t") do |row|
+        tatoeba_id, _lang, text = row
+        next unless tatoeba_id && text
+
+        result[tatoeba_id.to_i] = text
+      end
+      result
+    end
+
     # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
     def build_translation_mapping(eng_id_set, rus_sentences)
-      return {} unless links_file.exist?
+      unless links_file.exist?
+        # rubocop:disable Rails/Output
+        warn "[ImportTatoeba] SKIP translations: #{links_file} not found. " \
+             "Download from https://downloads.tatoeba.org/exports/links.tar.bz2"
+        # rubocop:enable Rails/Output
+        return {}
+      end
 
       mapping = {}
       CSV.foreach(links_file, col_sep: "\t") do |row|

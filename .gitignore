@@ -52,3 +52,6 @@
 /coverage/
 
 /db/dump/
+
+# Tatoeba dataset files — large, downloaded locally via rake task or bin/download_tatoeba
+/db/data/tatoeba/
