@@ -58,4 +58,7 @@ group :development do
   gem "rubocop-rails", require: false
   gem "rubocop-rspec", require: false
   gem "web-console"
+  # WordNet 3.1 for sense data import (ADR-001)
+  gem "wordnet"
+  gem "wordnet-defaultdb"
 end

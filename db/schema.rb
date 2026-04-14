@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_14_200925) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -32,6 +32,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
     t.index ["user_id", "due"], name: "index_cards_on_user_id_and_due"
     t.index ["user_id", "sentence_occurrence_id"], name: "index_cards_on_user_id_and_sentence_occurrence_id", unique: true
     t.index ["user_id", "state"], name: "index_cards_on_user_id_and_state"
+  end
+
+  create_table "context_families", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_context_families_on_name", unique: true
   end
 
   create_table "languages", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
@@ -80,14 +88,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
     t.index ["card_id", "reviewed_at"], name: "index_review_logs_on_card_id_and_reviewed_at"
   end
 
+  create_table "senses", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "definition", null: false
+    t.jsonb "examples", default: []
+    t.integer "external_id"
+    t.uuid "lexeme_id", null: false
+    t.string "lexical_domain"
+    t.string "pos", null: false
+    t.integer "sense_rank", default: 1
+    t.string "source", default: "wordnet", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_senses_on_external_id"
+    t.index ["lexeme_id", "external_id"], name: "index_senses_on_lexeme_id_and_external_id", unique: true, where: "(external_id IS NOT NULL)"
+    t.index ["lexeme_id", "pos"], name: "index_senses_on_lexeme_id_and_pos"
+    t.index ["lexeme_id"], name: "index_senses_on_lexeme_id"
+  end
+
   create_table "sentence_occurrences", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.uuid "context_family_id"
     t.datetime "created_at", null: false
     t.string "form", null: false
     t.string "hint"
     t.uuid "lexeme_id", null: false
+    t.uuid "sense_id"
     t.uuid "sentence_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["context_family_id"], name: "index_sentence_occurrences_on_context_family_id"
     t.index ["lexeme_id"], name: "index_sentence_occurrences_on_lexeme_id"
+    t.index ["sense_id"], name: "index_sentence_occurrences_on_sense_id"
     t.index ["sentence_id", "lexeme_id"], name: "index_sentence_occurrences_on_sentence_id_and_lexeme_id", unique: true
   end
 
@@ -106,10 +135,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
     t.datetime "created_at", null: false
     t.uuid "language_id", null: false
     t.string "source", null: false
+    t.integer "tatoeba_id"
     t.text "text", null: false
     t.datetime "updated_at", null: false
     t.index ["language_id", "text"], name: "index_sentences_on_language_id_and_text", unique: true
     t.index ["language_id"], name: "index_sentences_on_language_id"
+    t.index ["tatoeba_id"], name: "index_sentences_on_tatoeba_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -126,7 +157,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_235358) do
   add_foreign_key "lexeme_glosses", "lexemes"
   add_foreign_key "lexemes", "languages"
   add_foreign_key "review_logs", "cards", on_delete: :cascade
+  add_foreign_key "senses", "lexemes", on_delete: :cascade
+  add_foreign_key "sentence_occurrences", "context_families", on_delete: :restrict
   add_foreign_key "sentence_occurrences", "lexemes", on_delete: :restrict
+  add_foreign_key "sentence_occurrences", "senses", on_delete: :restrict
   add_foreign_key "sentence_occurrences", "sentences", on_delete: :restrict
   add_foreign_key "sentence_translations", "languages", column: "target_language_id"
   add_foreign_key "sentence_translations", "sentences", on_delete: :restrict

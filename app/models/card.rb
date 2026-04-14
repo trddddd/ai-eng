@@ -3,7 +3,7 @@ class Card < ApplicationRecord
   belongs_to :sentence_occurrence
   has_many :review_logs, dependent: :destroy
 
-  delegate :lexeme, :sentence, :form, :cloze_text, to: :sentence_occurrence
+  delegate :lexeme, :sentence, :form, :cloze_text, :sense, :context_family, to: :sentence_occurrence
 
   scope :due_for_review, lambda { |user, now: Time.current|
     where(user: user, mastered_at: nil).where(due: ..now)
