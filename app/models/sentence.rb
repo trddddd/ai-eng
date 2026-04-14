@@ -8,6 +8,12 @@ class Sentence < ApplicationRecord
   validates :text, uniqueness: { scope: :language_id }
   validate :text_has_no_cloze_placeholder
 
+  # For Tatoeba sentences, fallback to tatoeba_id when audio_id is nil
+  # Tatoeba audio URLs use the sentence ID as the audio file ID
+  def audio_id_with_fallback
+    audio_id || (source == "tatoeba" ? tatoeba_id : nil)
+  end
+
   private
 
   def text_has_no_cloze_placeholder
