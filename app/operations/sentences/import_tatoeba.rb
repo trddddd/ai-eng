@@ -67,7 +67,7 @@ module Sentences
     def parse_combined_file
       eng = {}
       rus = {}
-      CSV.foreach(sentences_file, col_sep: "\t") do |row|
+      CSV.foreach(sentences_file, col_sep: "\t", quote_char: "\x00") do |row|
         tatoeba_id, lang, text = row
         next unless tatoeba_id && lang && text
 
@@ -83,7 +83,7 @@ module Sentences
     # Per-language TSV format from Tatoeba: id<TAB>lang<TAB>text (same columns, one language)
     def parse_lang_file(file)
       result = {}
-      CSV.foreach(file, col_sep: "\t") do |row|
+      CSV.foreach(file, col_sep: "\t", quote_char: "\x00") do |row|
         tatoeba_id, _lang, text = row
         next unless tatoeba_id && text
 
@@ -103,7 +103,7 @@ module Sentences
       end
 
       mapping = {}
-      CSV.foreach(links_file, col_sep: "\t") do |row|
+      CSV.foreach(links_file, col_sep: "\t", quote_char: "\x00") do |row|
         id1_str, id2_str = row
         next unless id1_str && id2_str
 
