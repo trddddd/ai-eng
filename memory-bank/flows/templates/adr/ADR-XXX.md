@@ -20,6 +20,11 @@ template_target_path: ../../../adr/ADR-XXX.md
 
 `decision_status: proposed` в embedded contract ниже означает, что текст ADR является предложением и не считается принятым решением до перевода инстанцированного ADR в статус `accepted`.
 
+### Frontmatter fields
+
+- `related_tasks` — список ссылок на GitHub Issues с дополнительным контекстом или к которым относится решение.
+- `comment` — опционально. Причина отклонения (`rejected`), пересмотра (`superseded`) или иное пояснение к статусу.
+
 ## Instantiated Frontmatter
 
 ```yaml
@@ -29,6 +34,9 @@ doc_function: canonical
 purpose: "Фиксирует архитектурное или инженерное решение, его текущий `decision_status` и последствия."
 derived_from:
   - ../features/FT-XXX/feature.md
+related_tasks:
+  - "#XXX"
+comment:
 status: draft
 decision_status: proposed
 date: YYYY-MM-DD
@@ -42,6 +50,10 @@ must_not_define:
 
 ```markdown
 # ADR-XXX: Short Decision Name
+
+**Related tasks:** GitHub Issue #XXX, ...
+
+**Comment:** Опционально — почему ADR отклонён, пересмотрен или уточнён.
 
 ## Контекст
 

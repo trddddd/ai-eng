@@ -30,3 +30,10 @@ audience: humans_and_agents
 - `accepted` — решение принято и считается canonical input для downstream-документов
 - `superseded` — решение заменено другим ADR
 - `rejected` — решение рассмотрено и отклонено
+
+## ADR
+
+| ADR | Решение | `decision_status` | Связь |
+| --- | --- | --- | --- |
+| [ADR-001](ADR-001-sense-data-source.md) | Источник sense-данных для лексем: WordNet 3.1 via ruby-wordnet | `accepted` | FT-029 `DEC-01` |
+| [ADR-002](ADR-002-context-family-taxonomy.md) | Таксономия context families v1: consolidated flat list (~17 семей), маппинг из WordNet lexical domains | `accepted` | FT-029 `DEC-02` |

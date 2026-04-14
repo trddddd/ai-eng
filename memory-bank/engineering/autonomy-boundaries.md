@@ -26,7 +26,7 @@ audience: humans_and_agents
 
 ## Сессионные границы — требуют новой сессии
 
-- **Bootstrapping feature package** (`README.md` + `feature.md`) — выполняется в новой сессии с моделью **Opus** (`/model opus`). Причина: brief-дискуссия накапливает шум в контексте; чистый контекст + Opus даёт более качественный `feature.md`. STOP-gate зафиксирован в `flows/templates/feature/brief.md`.
+- **Bootstrapping feature package** (`README.md` + `feature.md`) — выполняется в новой сессии с моделью **Opus** (`/model opus`) или через subagent с Opus, если пользователь явно запросил продолжение в текущей сессии. Причина: brief-дискуссия накапливает шум в контексте; чистый контекст + Opus даёт более качественный `feature.md`. Override: если пользователь сказал «делай сабагентом» — STOP-gate снимается, агент использует subagent. STOP-gate зафиксирован в `flows/templates/feature/brief.md`.
 
 ## Супервизия — делай, но покажи на контрольной точке
 
@@ -42,7 +42,7 @@ audience: humans_and_agents
 - Неясные или противоречивые бизнес-требования
 - Выбор между равноценными подходами с разными trade-offs
 - Любые действия в production или against live data
-- **`db:drop`, `db:reset`, `db:drop db:create`** — никогда без явного подтверждения, даже для test env
+- **`db:drop`, `db:reset`, `db:drop db:create`, `bin/setup`** — никогда без явного подтверждения, даже для test env. `bin/setup` делает dump restore и перезаписывает dev-базу.
 - Подключение новых гемов или внешних интеграций
 - Отправка сообщений пользователям или внешним контрагентам
 - Изменение платёжных, security, auth или compliance-sensitive интеграций

@@ -17,6 +17,10 @@ template_target_path: ../../../features/FT-XXX/implementation-plan.md
 
 Этот файл описывает wrapper-template. Инстанцируемый `implementation-plan.md` живет ниже как embedded contract и копируется без wrapper frontmatter и history.
 
+## Выбор шаблона
+
+Если change surface ≤ 3 файлов и нет controllers/operations/models — используй лёгкий шаблон `implementation-plan-short.md`. Иначе — этот полный шаблон.
+
 ## Wrapper Notes
 
 Требования, дизайн, blocker-state и критерии приемки задаются в sibling `feature.md`. Этот документ определяет только sequencing работ и checkpoints выполнения.
