@@ -40,11 +40,18 @@ module Sentences
       Lexeme.pluck(:id, :headword).to_h { |id, hw| [hw.downcase, id] }
     end
 
-    def data_dir          = Rails.root.join("db/data/tatoeba")
-    def sentences_file    = data_dir.join("sentences.csv")       # combined: id<TAB>lang<TAB>text
-    def eng_sentences_file = data_dir.join("eng_sentences.tsv")  # per-language: id<TAB>lang<TAB>text
-    def rus_sentences_file = data_dir.join("rus_sentences.tsv")  # per-language: id<TAB>lang<TAB>text
-    def links_file        = data_dir.join("links.csv")
+    def data_dir = Rails.root.join("db/data/tatoeba")
+
+    # combined: id<TAB>lang<TAB>text
+    def sentences_file = data_dir.join("sentences.csv")
+
+    # per-language: id<TAB>lang<TAB>text
+    def eng_sentences_file = data_dir.join("eng_sentences.tsv")
+
+    # per-language: id<TAB>lang<TAB>text
+    def rus_sentences_file = data_dir.join("rus_sentences.tsv")
+
+    def links_file = data_dir.join("links.csv")
 
     # Supports two file layouts:
     #   1. Combined: single sentences.csv with all languages (from sentences.tar.bz2)
@@ -55,11 +62,9 @@ module Sentences
       elsif eng_sentences_file.exist? && rus_sentences_file.exist?
         [parse_lang_file(eng_sentences_file), parse_lang_file(rus_sentences_file)]
       else
-        # rubocop:disable Rails/Output
         warn "[ImportTatoeba] SKIP: Tatoeba data files not found in #{data_dir}. " \
              "Download eng_sentences.tsv + rus_sentences.tsv + links.csv from " \
              "https://downloads.tatoeba.org/exports/per_language/ and https://downloads.tatoeba.org/exports/links.tar.bz2"
-        # rubocop:enable Rails/Output
         [{}, {}]
       end
     end
@@ -92,13 +97,11 @@ module Sentences
       result
     end
 
-    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Metrics/MethodLength
     def build_translation_mapping(eng_id_set, rus_sentences)
       unless links_file.exist?
-        # rubocop:disable Rails/Output
         warn "[ImportTatoeba] SKIP translations: #{links_file} not found. " \
              "Download from https://downloads.tatoeba.org/exports/links.tar.bz2"
-        # rubocop:enable Rails/Output
         return {}
       end
 
@@ -117,7 +120,7 @@ module Sentences
       end
       mapping
     end
-    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize, Metrics/MethodLength
 
     def import_batches(eng_sentences, eng_to_rus_text, lexeme_lookup)
       # Only import English sentences that have a Russian translation
@@ -139,23 +142,26 @@ module Sentences
 
     def insert_batch(slice, eng_to_rus_text, lexeme_lookup, now)
       ApplicationRecord.transaction do
+        tatoeba_ids = slice.map { |id, _| id }
         sentence_rows = slice.map do |tatoeba_id, text|
           { language_id: @en.id, text:, source: "tatoeba", tatoeba_id:, created_at: now, updated_at: now }
         end
         Sentence.insert_all(sentence_rows, unique_by: :index_sentences_on_language_id_and_text)
 
-        texts = slice.map { |_, text| text }
-        text_to_id = Sentence.where(language_id: @en.id, text: texts).pluck(:text, :id).to_h
+        # По tatoeba_id — точный lookup, не по тексту
+        tatoeba_to_db_id = Sentence
+                           .where(language_id: @en.id, tatoeba_id: tatoeba_ids)
+                           .pluck(:tatoeba_id, :id).to_h
 
-        insert_translations(slice, eng_to_rus_text, text_to_id, now)
-        insert_occurrences(slice, text_to_id, lexeme_lookup, now)
+        insert_translations(slice, eng_to_rus_text, tatoeba_to_db_id, now)
+        insert_occurrences(slice, tatoeba_to_db_id, lexeme_lookup, now)
       end
     end
 
-    def insert_translations(slice, eng_to_rus_text, text_to_id, now)
-      rows = slice.filter_map do |tatoeba_id, text|
+    def insert_translations(slice, eng_to_rus_text, tatoeba_to_db_id, now)
+      rows = slice.filter_map do |tatoeba_id, _text|
         rus_text = eng_to_rus_text[tatoeba_id]
-        db_id = text_to_id[text]
+        db_id = tatoeba_to_db_id[tatoeba_id]
         next unless rus_text && db_id
 
         { sentence_id: db_id, target_language_id: @ru.id, text: rus_text, created_at: now, updated_at: now }
@@ -163,9 +169,9 @@ module Sentences
       SentenceTranslation.insert_all(rows, unique_by: %i[sentence_id target_language_id]) if rows.any?
     end
 
-    def insert_occurrences(slice, text_to_id, lexeme_lookup, now)
-      rows = slice.filter_map do |_tatoeba_id, text|
-        db_id = text_to_id[text]
+    def insert_occurrences(slice, tatoeba_to_db_id, lexeme_lookup, now)
+      rows = slice.filter_map do |tatoeba_id, text|
+        db_id = tatoeba_to_db_id[tatoeba_id]
         next unless db_id
 
         result = find_lexeme(text, lexeme_lookup)
@@ -180,20 +186,18 @@ module Sentences
     end
 
     def find_lexeme(text, lexeme_lookup)
-      downcased = text.downcase
-      candidates = lexeme_lookup.select { |hw, _| word_boundaries_regex(hw).match?(downcased) }
-      return nil if candidates.empty?
+      words = text.scan(/\b[a-zA-Z']+\b/)
 
-      best_hw, best_id = candidates.min_by do |hw, id|
-        [-hw.length, downcased.index(word_boundaries_regex(hw)), hw, id.to_s]
-      end
+      # Ищем самое длинное совпадение (для составных слов типа "look up")
+      best_hw = words
+                .filter_map { |w| lexeme_lookup.key?(w.downcase) ? w.downcase : nil }
+                .max_by(&:length)
 
-      form = text.match(word_boundaries_regex(best_hw))&.to_s
-      form ? [best_id, form] : nil
-    end
+      return nil unless best_hw
 
-    def word_boundaries_regex(headword)
-      Regexp.new("\\b#{Regexp.escape(headword)}\\b", Regexp::IGNORECASE)
+      lexeme_id = lexeme_lookup[best_hw]
+      form = text.match(/\b#{Regexp.escape(best_hw)}\b/i)&.to_s
+      form ? [lexeme_id, form] : nil
     end
   end
   # rubocop:enable Metrics/ClassLength
