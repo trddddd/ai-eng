@@ -54,7 +54,8 @@ namespace :content_bootstrap do
     else
       tmp_bz2 = dir.join("links.tar.bz2")
       puts "Downloading links.tar.bz2 (large file, ~200 MB compressed)..."
-      system("curl -L --progress-bar https://downloads.tatoeba.org/exports/links.tar.bz2 -o #{tmp_bz2}") || abort("curl failed for links.tar.bz2")
+      url = "https://downloads.tatoeba.org/exports/links.tar.bz2"
+      system("curl -L --progress-bar #{url} -o #{tmp_bz2}") || abort("curl failed for links.tar.bz2")
       puts "Extracting links.csv..."
       system("tar -xjf #{tmp_bz2} -C #{dir}") || abort("tar failed")
       FileUtils.rm_f(tmp_bz2)
