@@ -34,6 +34,7 @@ audience: humans_and_agents
 | FT-023 | Direct Landing on Study Content | done | #23 | main |
 | FT-025 | Dashboard MVP: progress cards | done | #25 | feat/025-dashboard-progress |
 | FT-027 | Cloze card: remove quotes and blinking cursor | done | #27 | main |
+| FT-029 | Lexeme Sense & Context Families | active | #29 | --- |
 
 ## Legacy Note
 

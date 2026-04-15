@@ -83,6 +83,20 @@ bin/rails console
 - Используется для cache/queue
 - Default: `redis://localhost:6379`
 
+## Verification Commands
+
+Не все изменения требуют одинаковой верификации. Выбирай команду по типу change surface:
+
+| Change type | Verify command | Notes |
+| --- | --- | --- |
+| Ruby code (models, operations, controllers) | `bundle exec rspec` + `bundle exec rubocop` | Полный прогон |
+| CSS / view templates | `bin/rails assets:precompile` или визуальная проверка | rspec irrelevant, rubocop не парсит ERB |
+| Migration | `bin/rails db:migrate` + `bundle exec rspec` | Миграция на тестовой БД |
+| Config / routes | `bin/rails routes` + `bundle exec rspec` | Проверка что приложение поднимается |
+| Документация (memory-bank) | Нет автоматической проверки | Визуальный review |
+
+**Важно:** `bin/setup` — деструктивная операция (dump restore). Запускать только на чистом окружении. Правило эскалации — см. `autonomy-boundaries.md`.
+
 ## Known Pitfalls
 
 - PostgreSQL порт **5433**, не 5432 — проверь `DATABASE_URL` или `config/database.yml`

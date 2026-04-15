@@ -54,6 +54,13 @@ audience: humans_and_agents
 Создай feature package FT-XXX для: [описание фичи].
 ```
 
+### Ревью PRD
+
+```text
+Прочитай .prompts/prd/review.md.
+Проведи ревью PRD по критериям PRDAS: [путь к PRD].
+```
+
 ### Bug fix
 
 ```text

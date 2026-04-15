@@ -26,7 +26,8 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 - Не подключать новые гемы и не добавлять интеграции без явного запроса.
 - Первичный ключ — всегда UUID v7.
 - Именование файлов совместимо с Zeitwerk.
-- AC проверяются через `bin/setup --skip-server` на чистой БД.
+- Никогда не запускать `db:drop`, `db:reset`, `db:drop db:create`, `bin/setup` без явного подтверждения пользователя — эти команды делают dump restore и перезаписывают данные dev-окружения.
+- AC проектировать верифицируемыми на чистой БД (принцип проектирования, не инструкция к запуску).
 
 ## Документация
 
@@ -71,6 +72,10 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 - [engineering/architecture-patterns.md](engineering/architecture-patterns.md)
   **Что:** Layered Rails (4 слоя), callback scoring, паттерны, `/layers:*` скилл.
   **Читать, чтобы:** не нарушить архитектурные границы.
+
+- [engineering/design-principles.md](engineering/design-principles.md)
+  **Что:** Принципы проектирования: фокус на цели, альтернативы, баланс сложности, гипотезы.
+  **Читать, чтобы:** проектировать решения до и во время создания ADR.
 
 - [engineering/autonomy-boundaries.md](engineering/autonomy-boundaries.md)
   **Что:** Границы автономии агента: автопилот, супервизия, эскалация.
@@ -139,11 +144,12 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 
 Memory Bank ложится на 6 шагов Spec-Driven Development:
 
-| Шаг SDD | Как используется Memory Bank |
-| --- | --- |
-| **Brief** | Прогрев: агент читает `index.md` → набирает контекст проекта |
-| **Spec** | Бриф → feature package; grounding через `domain/` и `prd/` |
-| **Plan** | Декомпозиция фичи; `engineering/` определяет стиль и тестирование |
-| **Implement** | Агент следует `engineering/` при написании кода |
-| **Verify** | AC из `feature.md`; верификация против плана |
-| **Ship** | Обновление реестров, frontmatter → `done` |
+| Шаг SDD | Как используется Memory Bank | Execution Prompt |
+| --- | --- | --- |
+| **Brief** | Прогрев: агент читает `index.md` → набирает контекст проекта | — |
+| **PRD** | PRD → продуктовая инициатива; grounding через `domain/` и `prd/` | [`.prompts/prd/review.md`](../.prompts/prd/review.md) |
+| **Feature** | Бриф → feature package; grounding через `domain/` и `prd/` | [`.prompts/feature/review.md`](../.prompts/feature/review.md) |
+| **Plan** | Декомпозиция фичи; `engineering/` определяет стиль и тестирование | `.prompts/plan/review.md` _(planned)_ |
+| **Implement** | Агент следует `engineering/` при написании кода | — |
+| **Verify** | AC из `feature.md`; верификация против плана | — |
+| **Ship** | Обновление реестров, frontmatter → `done` | — |

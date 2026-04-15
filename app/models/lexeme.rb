@@ -3,6 +3,7 @@ class Lexeme < ApplicationRecord
 
   belongs_to :language
   has_many :lexeme_glosses, dependent: :destroy
+  has_many :senses, dependent: :destroy
 
   validates :headword, presence: true
   validates :headword, uniqueness: { scope: :language_id }

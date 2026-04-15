@@ -112,6 +112,38 @@ DAG зависимостей между документами через `deriv
 
 Принцип: обзор сначала, детали по ссылкам. Верхний уровень остаётся читаемым.
 
+### Sense
+
+Отдельное значение лексемы (lemma + sense definition). Для полисемичных слов — каждый sense отслеживается независимо: `run₁` = "бежать", `run₂` = "управлять". Для monosemous слов — fallback: `lexeme == sense` (одно значение). Сущность `Sense` в FT-029.
+
+### Synset (Синсет)
+
+Группа синонимов в WordNet, выражающих одно понятие (смысл). Идентифицируется synset ID (числовой offset, 9+ цифр). Каждый synset имеет definition, POS, lexical domain, examples. Связан с другими synsets через отношения: hypernym, hyponym, meronym и т.д.
+
+### WordNet
+
+Лексическая база данных английского языка (Princeton). Организована как граф synsets. Версии: 3.0 (2006) и 3.1 (2011). Источник sense-данных для Lingvize: definitions, sense rank, lexical domains. Лицензия: свободная (аналог BSD).
+
+### Context Family
+
+Именованная группа контекстов употребления слова. Классифицирует предложения по схожести ситуации или домена: `run` в спорте vs `run` в бизнесе. v1 = curated string labels из контролируемого словаря. Fallback для неклассифицированных: `unknown`. Сущность `ContextFamily` в FT-029.
+
+### Word Mastery
+
+Персональное состояние знания слова у пользователя. Метрики: stability, context coverage, sense coverage, reliability. Вычисляется rule-based агрегацией из card states. Не использует FSRS напрямую — слово не ревьюится, оценивается через evidence от карточек.
+
+### WSD (Word Sense Disambiguation)
+
+Автоматическое определение, какой именно sense (synset) слова имеется в виду в конкретном предложении. Для Lingvize: привязка SentenceOccurrence к конкретному Sense. MVP подход: Most Frequent Sense (MFS) + POS filter (~70-75% accuracy).
+
+### Most Frequent Sense (MFS)
+
+Baseline-подход к WSD: берётся первый (самый частый) sense слова из WordNet. WordNet упорядочивает senses по частотности на основе SemCor. Для Oxford 5000 слов даёт ~70-75% accuracy. Не требует отдельного кода WSD.
+
+### Content Pipeline
+
+Пайплайн наполнения базы контентом: импорт лексем (Oxford 5000, NGSL) → глоссы (Poliglot) → предложения (Quizword) → sense-разметка (WordNet, FT-029) → контекстные семьи. Operations в `app/operations/content_bootstrap/`.
+
 ## Architecture Terms
 
 ### Operation

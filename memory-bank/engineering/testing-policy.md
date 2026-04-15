@@ -79,3 +79,16 @@ audience: humans_and_agents
 - DB: реальная PostgreSQL в тестах (не SQLite)
 - Перед handoff агент обязан прогнать: `bundle exec rspec` + `bundle exec rubocop`
 - **Перед написанием новых спеков:** прочитать хотя бы один существующий спек того же типа, чтобы соответствовать конвенциям проекта. В этом проекте model specs используют `subject(:model) { build(:model) }`, оборачивают кейсы в `describe "validations"`, мутируют subject вместо сборки с невалидными attrs
+
+## Verification by Change Type
+
+Не все типы изменений требуют полного прогона `rspec + rubocop`. Выбирай verification command по change surface:
+
+| Change type | Verify command | Notes |
+| --- | --- | --- |
+| Ruby code (models, operations, controllers) | `bundle exec rspec` + `bundle exec rubocop` | Полный прогон обязателен |
+| CSS / Tailwind / view templates (ERB) | `bin/rails assets:precompile` или визуальная проверка | rspec irrelevant для CSS, **rubocop не парсит ERB** — не запускать на `.html.erb` файлах |
+| Database migration | `bin/rails db:migrate` + `bundle exec rspec` | Миграция на тестовой БД |
+| Config / routes | `bin/rails routes` + `bundle exec rspec` | Проверка что приложение поднимается |
+| Документация (memory-bank) | Нет автоматической проверки | Визуальный review достаточен |
+

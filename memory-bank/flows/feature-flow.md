@@ -38,6 +38,7 @@ audience: humans_and_agents
 9. **Связь с task tracker.** При создании feature package агент обязан добавить в исходную задачу или ticket ссылки на `feature.md` и, после появления, на `implementation-plan.md`. Это обеспечивает навигацию из task tracker к спецификации без ручного поиска по репозиторию.
 10. Если фича является частью более крупной инициативы, `feature.md` может зависеть от PRD из `memory-bank/prd/`, но PRD не заменяет сам feature package.
 11. Если фича создает новый устойчивый сценарий проекта или materially changes существующий, соответствующий `UC-*` в `memory-bank/use-cases/` должен быть создан или обновлен до closure.
+12. Если фича вводит новые доменные или архитектурные термины (сущности, паттерны, внешние концепции), соответствующие записи в `memory-bank/glossary.md` должны быть добавлены или обновлены к моменту Design Ready. Агент проверяет glossary при создании `feature.md` и пополняет его при появлении новых терминов в ходе работы.
 
 ## Выбор шаблона `feature.md`
 
@@ -85,11 +86,12 @@ flowchart LR
 - [ ] каждый `REQ-*` прослеживается к ≥ 1 `SC-*` через traceability matrix
 - [ ] секция `Verify` содержит ≥ 1 `CHK-*` и ≥ 1 `EVID-*`
 - [ ] если deliverable нельзя принять без negative/edge coverage → ≥ 1 `NEG-*`
+- [ ] новые доменные или архитектурные термины добавлены в `memory-bank/glossary.md`
 
 ### Design Ready → Plan Ready
 
 - [ ] агент выполнил grounding: прошёлся по текущему состоянию системы (relevant paths, existing patterns, dependencies) и зафиксировал результат в discovery context секции `implementation-plan.md`
-- [ ] **Layered Rails: `/layers:spec-test`** выполнен на всех затрагиваемых файлах (controllers, operations, models) для получения рекомендаций по тест-стратегии с учётом слоёв
+- [ ] **Layered Rails: `/layers:spec-test`** выполнен на всех затрагиваемых файлах (controllers, operations, models) для получения рекомендаций по тест-стратегии с учётом слоёв. **Exception:** если change surface затрагивает только views/CSS/config — шаг пропускается с пометкой `N/A: no layered code in change surface`
 - [ ] `implementation-plan.md` создан по шаблону `templates/feature/implementation-plan.md`
 - [ ] `implementation-plan.md` → `status: active`
 - [ ] `implementation-plan.md` содержит ≥ 1 `PRE-*`, ≥ 1 `STEP-*`, ≥ 1 `CHK-*`, ≥ 1 `EVID-*`
@@ -97,7 +99,7 @@ flowchart LR
 
 ### Plan Ready → Execution
 
-- [ ] feature branch создана от `main`: `feat/<short-description>` (например `feat/023-direct-landing`); агент создаёт ветку автономно без подтверждения
+- [ ] feature branch создана от `main` **до любых write-операций** (включая создание feature package файлов): `feat/<short-description>` (например `feat/023-direct-landing`); агент создаёт ветку автономно без подтверждения
 - [ ] `feature.md` → `delivery_status: in_progress`
 - [ ] `implementation-plan.md` → `status: active`
 - [ ] `implementation-plan.md` фиксирует test strategy: automated coverage surfaces, required local/CI suites
@@ -110,7 +112,7 @@ flowchart LR
 - [ ] automated tests для change surface добавлены или обновлены
 - [ ] required test suites зелёные локально и в CI
 - [ ] каждый manual-only gap явно approved человеком (approval ref в `AG-*`)
-- [ ] **Layered Rails: `/layers:review`** выполнен на всех новых/изменённых файлах, критических нарушений архитектурных границ нет
+- [ ] **Layered Rails: `/layers:review`** выполнен на всех новых/изменённых файлах, критических нарушений архитектурных границ нет. **Exception:** если change surface затрагивает только views/CSS/config — шаг пропускается с пометкой `N/A: no layered code in change surface`
 - [ ] simplify review выполнен: код минимально сложен или complexity обоснована ссылкой на `CON-*`, `FM-*` или `DEC-*`
 - [ ] если feature добавляет новый stable flow или materially changes существующий project-level scenario, соответствующий `UC-*` создан или обновлен и зарегистрирован в `memory-bank/use-cases/README.md`
 - [ ] `feature.md` → `delivery_status: done`

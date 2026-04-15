@@ -36,6 +36,8 @@ FileUtils.chdir APP_ROOT do # rubocop:disable Metrics/BlockLength
     system! "bin/rails db:migrate"
   else
     puts "No dump found — running full setup (~30 min)..."
+    puts "Downloading Tatoeba data files (required for sentence import)..."
+    system! "bin/rails content_bootstrap:download_tatoeba"
     system! "bin/rails db:prepare"
     begin
       system! "bin/rails db:dump:create"
