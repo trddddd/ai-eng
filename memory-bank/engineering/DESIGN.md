@@ -1,3 +1,15 @@
+---
+title: Design System Strategy
+doc_kind: engineering
+doc_function: canonical
+purpose: "Editorial Scholar design system: цвета, типографика, компоненты, паттерны взаимодействия."
+derived_from:
+  - ../dna/principles.md
+  - ../domain/problem.md
+status: active
+audience: humans_and_agents
+---
+
 # Design System Strategy: The Editorial Scholar
 
 ## 1. Overview & Creative North Star

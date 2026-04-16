@@ -125,7 +125,7 @@ PRD-002 расширяет, а не заменяет PRD-001. Конкретны
 | Feature | Why it exists | Status |
 | --- | --- | --- |
 | [`FT-029`](../features/FT-029/) | Lexeme Sense: доменная сущность `sense`, контекстные семьи, импорт из WordNet (ADR-001), Tatoeba direct import | active |
-| `FT-XXX` | Word Mastery State: персональное состояние знания слова у пользователя | planned |
+| [`FT-031`](../features/FT-031/) | Word Mastery State: персональное состояние знания слова у пользователя | draft |
 | `FT-XXX` | Review Pipeline v2: contribution card → word mastery | planned |
 | `FT-XXX` | Session Builder v2: dual-level scheduling (card debt + word debt) | planned |
 | `FT-XXX` | Word Progress Dashboard: прогресс по словам вместо карточек | planned |

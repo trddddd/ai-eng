@@ -147,3 +147,61 @@ Verify должен быть исполнимым и задавать миним
 | --- | --- | --- | --- | --- |
 | `EVID-01` | Минимальный verify-артефакт | verify-runner / human | `artifacts/ft-xxx/verify/chk-01/` | `CHK-01` |
 ```
+
+## Attempts
+
+Attempt tracking создаётся автоматически при начале execution. См. `templates/feature/attempt.md`.
+
+### Attempt Structure
+
+```
+attempts/
+├── attempt-1/
+│   ├── meta.yaml          # attempt metadata
+│   ├── start.md            # state snapshot
+│   ├── end.md              # completion summary
+│   └── artifacts/          # diff, logs, screenshots
+├── attempt-2/
+└── ...
+```
+
+### Attempt Lifecycle
+
+| Состояние | Worktree | Следующий шаг |
+|-----------|----------|----------------|
+| Start | `git worktree add -b feat/ft-xxx-att1` | Implement |
+| Done (accept) | merge, then remove | — |
+| Revise | continue in same worktree | Collect missing evidence |
+| Abandon | remove worktree | attempt-N+1 |
+
+Правила:
+- Evidence (`EVID-*`) обязательна для каждого `CHK-*` перед accept
+- После 3 неудачных attempts → эскалация (loop detected)
+- Успешная attempt закрывается с merge в main
+
+## Eval
+
+Eval layer создаётся автоматически при Design Ready. См. `templates/eval/strategy.md`.
+
+### Eval Structure
+
+```
+eval/
+├── strategy.md          # eval layers, test strategy
+├── suite/
+│   ├── happy-path.md   # основной сценарий
+│   ├── edge-cases.md   # граничные случаи
+│   └── regression.md   # проверка на регрессию
+└── results/
+    ├── plan-coverage.md  # результат проверки плана
+    └── acceptance.md      # результат acceptance tests
+```
+
+### Eval Gate
+
+Execution → Done требует:
+- ✅ Eval suite выполнена (`/eval:run` → pass)
+- ✅ Все critical eval cases passed
+- ✅ Evidence для failed evals собран
+
+```

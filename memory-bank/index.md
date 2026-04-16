@@ -98,16 +98,20 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 ### Процессы и шаблоны
 
 - [flows/feature-flow.md](flows/feature-flow.md)
-  **Что:** Lifecycle фичи: Draft → Design Ready → Plan Ready → Execution → Done.
+  **Что:** Lifecycle фичи: Draft → Design Ready → Plan Ready → Execution → Done; attempt lifecycle; eval layer.
   **Читать, чтобы:** создать или вести feature package.
 
 - [flows/templates/](flows/templates/)
-  **Что:** Шаблоны feature, ADR, PRD, use case.
+  **Что:** Шаблоны feature, ADR, PRD, use case, attempt, eval.
   **Читать, чтобы:** инстанцировать новый governed-документ.
 
 - [flows/workflows.md](flows/workflows.md)
   **Что:** Маршрутизация задач по типам, градиент автономии.
   **Читать, чтобы:** определить workflow для текущей задачи.
+
+- [flows/feature-orchestration.md](flows/feature-orchestration.md)
+  **Что:** Полный lifecycle от идеи до PR merge; state transitions; resume protocol (`продолжи FT-XXX`); сценарии с разными исходами.
+  **Читать, чтобы:** понять как перетекают состояния, как пережить разрыв контекста, как подхватить фичу в новой сессии.
 
 ### Реестры
 
@@ -135,7 +139,6 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 
 | Когда | Команда |
 | --- | --- |
-| **Планирование фичи** | `/layers:spec-test` на затрагиваемых файлах |
 | **Реализация / ревью** | `/layers:review` после написания кода |
 | **Рефакторинг** | `/layers:analyze`, `/layers:analyze:callbacks`, `/layers:analyze:gods` |
 | **Новый паттерн** | `/layers:gradual [цель]` |
@@ -153,3 +156,15 @@ Memory Bank ложится на 6 шагов Spec-Driven Development:
 | **Implement** | Агент следует `engineering/` при написании кода | — |
 | **Verify** | AC из `feature.md`; верификация против плана | — |
 | **Ship** | Обновление реестров, frontmatter → `done` | — |
+
+## Feature Lifecycle — Quick Reference
+
+Перед работой с фичей — проверить `feature.md` → `status` + `delivery_status`. Подробности: `flows/feature-flow.md`.
+
+| Стадия | `status` | `delivery_status` | Что делать | Код? |
+| --- | --- | --- | --- | --- |
+| Draft | `draft` | `planned` | Ревью спеки → Design Ready gates | Нет |
+| Design Ready | `active` | `planned` | Grounding + создать `implementation-plan.md` | Нет |
+| Plan Ready | `active` | `planned` | Создать ветку → кодить по плану | Да |
+| Execution | `active` | `in_progress` | Кодить по `implementation-plan.md` | Да |
+| Done | `active` | `done` | Закрыть, обновить реестры | Нет |

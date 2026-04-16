@@ -3,6 +3,8 @@ title: "FT-027: Cloze card: убрать кавычки и мигающий ку
 doc_kind: feature
 doc_function: canonical
 purpose: "Убрать литеральные кавычки вокруг cloze-предложения и скрыть мигающий текстовый caret в inline-инпуте на review-карточке."
+derived_from:
+  - ../../domain/problem.md
 status: active
 delivery_status: done
 audience: humans_and_agents

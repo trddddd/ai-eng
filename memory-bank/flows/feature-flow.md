@@ -64,9 +64,101 @@ flowchart LR
     EX --> CL
 ```
 
+## Resume / Continue Work — ОБЯЗАТЕЛЬНЫЙ ВХОД
+
+Когда получена задача «продолжи работу над фичей N» или любая задача, связанная с реализацией существующей фичи:
+
+1. Прочитай `feature.md` → проверь `delivery_status`
+2. Найди соответствующую строку в таблице ниже и **полностью выполни все gate-предикаты** из указанного раздела перед любым write-действием (создание файлов, запуск команд, редактирование кода)
+
+| `delivery_status` | Наличие `implementation-plan.md` | Где искать gates | Первый обязательный шаг |
+|---|---|---|---|
+| `planned` | отсутствует | Design Ready → Plan Ready | Grounding + создать eval suite + создать `implementation-plan.md` |
+| `planned` | присутствует | **Plan Ready → Execution** | Проверить eval suite → создать worktree через `EnterWorktree` → создать attempt |
+| `in_progress` | присутствует | Execution (внутри worktree) | Прочитать impl-plan → найти первый незакрытый `STEP-*` → продолжить в worktree |
+| `done` / `cancelled` | любое | — | Сообщить пользователю, уточнить задачу |
+
+> **Запрещено:** начинать писать код, создавать файлы кода или запускать миграции до тех пор, пока все gate-предикаты соответствующего раздела не проверены и не выполнены.
+
 ## Transition Gates
 
 Каждый gate — набор проверяемых предикатов. Переход допустим тогда и только тогда, когда все предикаты истинны.
+
+### Execution → Done
+
+- [ ] все `CHK-*` из `feature.md` имеют результат pass/fail в evidence
+- [ ] все `EVID-*` из `feature.md` заполнены конкретными carriers (путь к файлу, CI run, screenshot)
+- [ ] automated tests для change surface добавлены или обновлены
+- [ ] required test suites зелёные локально и в CI
+- [ ] каждый manual-only gap явно approved человеком (approval ref в `AG-*`)
+- [ ] **Layered Rails: `/layers:review`** выполнен на всех новых/изменённых файлах, критических нарушений архитектурных границ нет. **Exception:** если change surface затрагивает только views/CSS/config — шаг пропускается с пометкой `N/A: no layered code in change surface`
+- [ ] simplify review выполнен: код минимально сложен или complexity обоснована ссылкой на `CON-*`, `FM-*` или `DEC-*`
+- [ ] если feature добавляет новый устойчивый сценарий проекта или materially changes существующий project-level scenario, соответствующий `UC-*` создан или обновлен и зарегистрирован в `memory-bank/use-cases/README.md`
+- [ ] `feature.md` → `delivery_status: done`
+- [ ] `implementation-plan.md` → `status: archived`
+- [ ] **Eval suite выполнена:** `/eval:run` для этой фичи возвращает pass
+
+### Orchestration Patterns
+
+Перед стартом первого attempt агент обязан выбрать один из трёх паттернов и зафиксировать выбор в `meta.yaml` attempt-а.
+
+| Pattern | Когда использовать | Признаки |
+|---|---|---|
+| `sequential` | **Default.** Workstreams зависят друг от друга, один агент, один worktree | PAR-* блоков нет или они малы; merge-конфликты вероятны при параллельной работе |
+| `parallel` | Независимые workstreams, выигрыш по времени оправдывает merge-усилие | ≥ 2 явных PAR-* с непересекающимся change surface; каждый WS завершён атомарно и может быть review-рован независимо |
+| `delegated` | Шаг требует специализированного агента или capability, которой нет у основного агента | Шаг — `/layers:review`, `/spec-review`, поиск по большой кодовой базе, eval-runner |
+
+**Parallel worktree rule:** переход в `parallel` допустим только если:
+1. PAR-* workstreams явно объявлены в `implementation-plan.md`
+2. Change surface не пересекается (разные файлы)
+3. Merge strategy зафиксирована в `meta.yaml` до старта второго worktree
+
+### Attempt Lifecycle
+
+Каждый attempt — первая попытка реализации может иметь несколько итераций:
+
+```mermaid
+flowchart LR
+    AT["Start Attempt<br/>worktree создан"] --> IM["Implement"]
+    IM --> CH["Check<br/>CHK-* vs EVID-*"]
+    CH --> PE{Evidence?}
+    PE -->|pass| AC["Accept<br/>attempt done"]
+    PE -->|incomplete| RV["Revise<br/>собрать недостающие<br/>evidence"]
+    RV --> CH
+    AC --> MG{Merge?}
+    MG -->|yes| MR["Merge & close attempt<br/>worktree remove"]
+    MG -->|no| NX["Next attempt<br/>attempt-N+1<br/>new worktree"]
+```
+
+Правила:
+- Каждый attempt создаётся через инструмент `EnterWorktree` (не `git checkout -b`)
+- После accept/merge: worktree удаляется
+- Evidence (`EVID-*`) обязательна для каждого `CHK-*` перед переходом к следующей попытке
+- После 3 неудачных attempts — эскалация ("loop detected → upstream problem")
+
+## Eval Layer
+
+Eval — отдельный слой верификации, живёт в `feature/eval/` и запускается при Design Ready и перед Done.
+
+### Eval для фичи
+
+| Слой | Проверяет | Evidence | Авто? |
+|-------|-----------|----------|--------|
+| 1. Гигиена | lint, typecheck, build | ✅ |
+| 2. Plan coverage | REQ-* → STEP-* | ⚠️ subagent |
+| 3. Acceptance | CHK-* → EVID-* | ⚠️ mixed |
+| 4. Workflow | trajectory, пропущенные шаги | ⚠️ evaluator |
+| 5. Data integrity | card/word mapping, migrations | ❌ manual |
+
+### Eval Suite
+
+Минимальный набор тестовых кейсов создаётся автоматически при Design Ready:
+
+- `eval/suite/happy-path.md` — основной сценарий
+- `eval/suite/edge-cases.md` — граничные случаи
+- `eval/suite/regression.md` — проверка на регрессию
+
+Запуск: `/eval:run` command → evaluator agent executes suite → decision (accept/revise/escalate).
 
 ### Bootstrap Feature Package
 
@@ -91,7 +183,7 @@ flowchart LR
 ### Design Ready → Plan Ready
 
 - [ ] агент выполнил grounding: прошёлся по текущему состоянию системы (relevant paths, existing patterns, dependencies) и зафиксировал результат в discovery context секции `implementation-plan.md`
-- [ ] **Layered Rails: `/layers:spec-test`** выполнен на всех затрагиваемых файлах (controllers, operations, models) для получения рекомендаций по тест-стратегии с учётом слоёв. **Exception:** если change surface затрагивает только views/CSS/config — шаг пропускается с пометкой `N/A: no layered code in change surface`
+- [ ] eval suite создан: `eval/suite/happy-path.md`, `eval/suite/edge-cases.md`, `eval/suite/regression.md` (минимальный набор тестовых кейсов по `SC-*` и `NEG-*` из `feature.md`)
 - [ ] `implementation-plan.md` создан по шаблону `templates/feature/implementation-plan.md`
 - [ ] `implementation-plan.md` → `status: active`
 - [ ] `implementation-plan.md` содержит ≥ 1 `PRE-*`, ≥ 1 `STEP-*`, ≥ 1 `CHK-*`, ≥ 1 `EVID-*`
@@ -99,7 +191,13 @@ flowchart LR
 
 ### Plan Ready → Execution
 
-- [ ] feature branch создана от `main` **до любых write-операций** (включая создание feature package файлов): `feat/<short-description>` (например `feat/023-direct-landing`); агент создаёт ветку автономно без подтверждения
+- [ ] eval suite существует: `eval/suite/happy-path.md`, `eval/suite/edge-cases.md`, `eval/suite/regression.md` — **обязательная проверка перед любым write-действием**; если не создан — создать сейчас, до кода
+- [ ] eval criteria объявлены: для каждого `CHK-*` зафиксировано что считается pass — **до написания кода**
+- [ ] evidence pre-declaration заполнена в `implementation-plan.md`: ожидаемые `EVID-*` с путями и producing steps — **до написания кода**
+- [ ] orchestration pattern выбран (`sequential` / `parallel` / `delegated`) и зафиксирован в `implementation-plan.md` → Orchestration Pattern секция
+- [ ] Human Control Map заполнена в `implementation-plan.md` (или явно `none — fully autonomous`)
+- [ ] worktree создан через инструмент `EnterWorktree` — **не через `git checkout -b`**; `EnterWorktree` создаёт изолированную копию репозитория; простая ветка этого не обеспечивает
+- [ ] `attempts/attempt-1/meta.yaml` создан с `orchestration.*` и `human_control_points`; pre-attempt checklist в `start.md` отмечен
 - [ ] `feature.md` → `delivery_status: in_progress`
 - [ ] `implementation-plan.md` → `status: active`
 - [ ] `implementation-plan.md` фиксирует test strategy: automated coverage surfaces, required local/CI suites
@@ -107,6 +205,7 @@ flowchart LR
 
 ### Execution → Done
 
+- [ ] **Eval suite выполнена:** `/eval:run` для этой фичи возвращает `accept` — **обязательное условие до closure**
 - [ ] все `CHK-*` из `feature.md` имеют результат pass/fail в evidence
 - [ ] все `EVID-*` из `feature.md` заполнены конкретными carriers (путь к файлу, CI run, screenshot)
 - [ ] automated tests для change surface добавлены или обновлены
@@ -143,7 +242,7 @@ Canonical testing policy живёт в [../engineering/testing-policy.md](../eng
 2. **Sufficient coverage** = покрыт основной changed behavior, новые или измененные contracts, критичные failure modes из `FM-*` и feature-specific negative/edge scenarios, если они меняют verdict. Процент line coverage сам по себе недостаточен.
 3. **Manual-only допустим** только как явное исключение (live infra, hardware, недетерминированная среда). Для каждого gap — причина, ручная процедура или `EVID-*`, owner follow-up и approval ref через `AG-*`.
 4. **К Design Ready** `feature.md` уже фиксирует test case inventory: минимум один `SC-*`, traceability к `REQ-*`. К `Done` — automated tests добавлены, обязательные suites зелёные локально и в CI.
-5. **Layered Rails проверки** — обязательная часть процесса: `/layers:spec-test` при планировании (Design Ready → Plan Ready) для рекомендаций по тест-стратегии с учётом слоёв; `/layers:review` после реализации (Execution → Done) для проверки архитектурных границ.
+5. **Layered Rails проверки** — обязательная часть процесса: `/layers:review` после реализации (Execution → Done) для проверки архитектурных границ.
 6. **Simplify review** — отдельный проход после функциональных тестов, до closure. Цель: убедиться, что код минимально сложен. Три похожие строки лучше premature abstraction. Complexity оправдана только со ссылкой на `CON-*`, `FM-*` или `DEC-*`.
 7. **Verification context separation** — функциональная верификация, Layered Rails review, simplify review и acceptance test — логически отдельных прохода. Между проходами агент формулирует выводы до начала следующего. Для short features допустимо в одной сессии, но ни один из проходов не пропускается.
 

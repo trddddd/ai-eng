@@ -26,9 +26,13 @@ audience: humans_and_agents
 
 Предложение из внешнего корпуса (Tatoeba, Quizword) с указанием source. Содержит текст на языке оригинала.
 
+### SentenceTranslation
+
+Перевод предложения на целевой язык. Связывает Sentence с Language (target). Уникальна по паре `(sentence_id, target_language_id)`.
+
 ### SentenceOccurrence
 
-Связь лексемы с предложением: фиксирует, какое слово (form) встречается в каком предложении. Генерирует cloze text (текст с пропущенным словом: `____`).
+Связь лексемы с предложением: фиксирует, какое слово (form) встречается в каком предложении. Генерирует cloze text (текст с пропущенным словом: `____`). Связана с `Sense` (какое значение слова) и `ContextFamily` (контекстная семья) через FT-029.
 
 ### Cloze Deletion
 
@@ -36,7 +40,7 @@ audience: humans_and_agents
 
 ### Card
 
-Учебная карточка пользователя. Привязана к SentenceOccurrence. Хранит FSRS-состояние: stability, difficulty, scheduled_days, reps, lapses, state, due.
+Учебная карточка пользователя. Привязана к SentenceOccurrence. Хранит FSRS-состояние: stability, difficulty, scheduled_days, reps, lapses, state, due. Делегирует доступ к lexeme, sense, context_family через occurrence. Поле `mastered_at` отмечает время освоения карточки (вычисляется по FSRS-метрикам).
 
 ### FSRS
 
@@ -131,6 +135,18 @@ DAG зависимостей между документами через `deriv
 ### Word Mastery
 
 Персональное состояние знания слова у пользователя. Метрики: stability, context coverage, sense coverage, reliability. Вычисляется rule-based агрегацией из card states. Не использует FSRS напрямую — слово не ревьюится, оценивается через evidence от карточек.
+
+### UserLexemeState
+
+Агрегатное состояние знания слова для пары `(user_id, lexeme_id)`. Хранит денормализованные счётчики и проценты покрытия: `covered_sense_count`, `total_sense_count`, `sense_coverage_pct`, `covered_family_count`, `total_family_count`, `family_coverage_pct`, `last_covered_at`. Читается Session Builder v2 и Dashboard прогресса. Обновляется при каждом правильном ответе через `WordMastery::RecordCoverage`. Создаётся в FT-031.
+
+### UserSenseCoverage
+
+Запись факта, что пользователь хотя бы один раз ответил правильно на карточку, привязанную к конкретному `Sense`. Хранит `user_id`, `sense_id`, `first_correct_at`. Unique по `(user_id, sense_id)`. Создаётся в FT-031; обновляется в реальном времени в Review Pipeline v2.
+
+### UserContextFamilyCoverage
+
+Запись факта, что пользователь хотя бы один раз ответил правильно на карточку, использующую конкретную `ContextFamily` для данной лексемы. Хранит `user_id`, `lexeme_id`, `context_family_id`, `first_correct_at`. Unique по `(user_id, lexeme_id, context_family_id)`. Tracking на уровне `Lexeme`, не `Sense`: context family описывает домен употребления слова независимо от значения.
 
 ### WSD (Word Sense Disambiguation)
 

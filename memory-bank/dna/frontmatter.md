@@ -19,7 +19,7 @@ status: active
 | Поле | Когда | Описание |
 |---|---|---|
 | `derived_from` | Есть upstream-документ | Прямые upstream-зависимости. Каждый элемент — строка (путь) или объект `{path, fit}`, где `fit` объясняет scope зависимости |
-| `delivery_status` | Feature-документы | `planned` / `in_progress` / `done` / `cancelled` |
+| `delivery_status` | Feature-документы с `doc_function: canonical` | `planned` / `in_progress` / `done` / `cancelled`. Не требуется для `doc_function: index` (feature README) |
 | `decision_status` | ADR-документы | `proposed` / `accepted` / `superseded` / `rejected` |
 
 ## Дополнительные поля

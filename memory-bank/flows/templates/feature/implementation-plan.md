@@ -29,8 +29,11 @@ template_target_path: ../../../features/FT-XXX/implementation-plan.md
 Создавай этот документ только после того, как sibling `feature.md` переведен в `status: active`. Пока план только формируется, сам `implementation-plan.md` может оставаться в `status: draft`; до перехода feature в `delivery_status: in_progress` план должен стать `status: active`.
 
 **Layered Rails обязательные проверки:**
-1. При планировании фичи — запуск `/layers:spec-test` на затрагиваемых файлах для рекомендаций по тест-стратегии с учётом слоёв
-2. После написания кода — запуск `/layers:review` на новых/изменённых файлах для проверки архитектурных границ
+После написания кода — запуск `/layers:review` на новых/изменённых файлах для проверки архитектурных границ.
+
+**Eval обязательные проверки:**
+- `STEP-EVAL-CREATE`: Создание eval suite до начала реализации (Design Ready → Plan Ready)
+- `STEP-EVAL-RUN`: Выполнение eval suite перед переходом в Done (Execution → Done)
 
 Когда feature переходит в `delivery_status: done` или `delivery_status: cancelled`, `implementation-plan.md` архивируется, если он больше не используется как рабочий execution-документ.
 
@@ -81,8 +84,6 @@ must_not_define:
 
 Какие test surfaces должны быть обновлены по мере реализации. Этот раздел фиксирует expected automated coverage, required local/CI gates и manual-only exceptions для change surface, не переопределяя canonical test cases из `feature.md`.
 
-**Layered Rails Test Strategy:** При планировании обязателен запуск `/layers:spec-test` на всех затрагиваемых файлах для получения рекомендаций по тест-стратегии с учётом слоёв.
-
 | Test surface | Canonical refs | Existing coverage | Planned automated coverage | Required local suites / commands | Required CI suites / jobs | Manual-only gap / justification | Manual-only approval ref |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `path/or/behavior` | `REQ-01`, `SC-01`, `NEG-01`, `CHK-01` | Что покрыто сейчас | Какой suite, test type или deterministic check обязаны добавить или обновить | Какие команды или suites обязаны быть зелёными локально | Какие jobs или suites обязаны быть зелёными в CI | Что пока остается manual-only и почему | `AG-01` / review link / `none` |
@@ -115,6 +116,35 @@ must_not_define:
 | `PRE-GIT` | `engineering/git-workflow.md` | Feature branch `feat/XXX-short-desc` создана от `main`; `git branch --show-current` → `feat/...`, не `main` | All steps | **yes** — создать автономно до первого изменения кода: `git checkout -b feat/XXX-short-desc` |
 | `PRE-01` | `ASM-01` / `DEC-01` / `CON-01` / ADR path | Какой state upstream считается допустимым для старта | `STEP-01`, `STEP-02` | yes / no |
 
+## Orchestration Pattern
+
+Выбери один паттерн до старта первого attempt. Зафиксируй в `attempts/attempt-1/meta.yaml`.
+
+| Field | Value |
+| --- | --- |
+| **Pattern** | `sequential` / `parallel` / `delegated` |
+| **Rationale** | Почему именно этот паттерн |
+| **Parallel condition** | _(только для parallel)_ Какие PAR-* независимы и как merge-ится результат |
+| **Delegated steps** | _(только для delegated)_ Какие STEP-* делегируются и какому агенту |
+
+## Evidence Pre-Declaration
+
+Зафиксируй ожидаемые evidence **до написания кода**. Агент обязан заполнить эту таблицу перед первым `STEP-*` с write-action.
+
+| Evidence ID | Canonical ref | Expected artifact | Expected path | Produced by step |
+| --- | --- | --- | --- | --- |
+| `EVID-01` | `CHK-01`, `SC-01` | Что именно должно появиться (log, screenshot, count) | `artifacts/ft-xxx/chk-01/` | `STEP-01` |
+
+## Human Control Map
+
+Полный список мест, где агент обязан остановиться и дождаться человека. Один раз заполнить до старта attempt.
+
+| Control Point ID | Trigger | Why human | What agent provides | Approved by |
+| --- | --- | --- | --- | --- |
+| `HC-01` | Условие, которое приостанавливает агента | Почему нельзя автономно | Что агент готовит для review | Кто подтверждает |
+
+_Если human control не нужен — оставь одну строку: `none — fully autonomous, Approval Gates: n/a`._
+
 ## Workstreams
 
 Разбей работу на независимые потоки с явным результатом каждого.
@@ -125,7 +155,7 @@ must_not_define:
 
 ## Approval Gates
 
-Какие действия нельзя выполнять без явного человеческого подтверждения. Используй этот раздел для рискованных, необратимых, дорогих или внешне-эффективных операций.
+Рискованные, необратимые или внешне-эффективные действия. Дополняет Human Control Map — здесь конкретные шаги и артефакты.
 
 | Approval Gate ID | Trigger | Applies to | Why approval is required | Approver / evidence |
 | --- | --- | --- | --- | --- |
@@ -135,13 +165,12 @@ must_not_define:
 
 Опиши выполнение как атомарные шаги. Каждый шаг должен быть достаточно маленьким, чтобы его можно было проверить и при необходимости откатить или остановить без расползания change surface.
 
-**Обязательный Layered Rails шаг:** При планировании фичи — запустить `/layers:spec-test` на всех затрагиваемых файлах для получения рекомендаций по тест-стратегии с учётом слоёв.
-
 | Step ID | Actor | Implements | Goal | Touchpoints | Artifact | Verifies | Evidence IDs | Check command / procedure | Blocked by | Needs approval | Escalate if |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `STEP-LAYERS-SPEC-TEST` | agent | - | Получение рекомендаций по тест-стратегии с учётом слоёв | Затрагиваемые файлы (controllers, operations, models) | Рекомендации по тест-стратегии | - | `EVID-LAYERS-SPEC` | `/layers:spec-test` на всех затрагиваемых файлах | - | `none` | - |
-| `STEP-01` | human / agent / either | `REQ-01`, `REQ-02`, `CTR-01` | Что делаем на этом шаге | Какие файлы, сервисы или данные трогаем | Что должно появиться после шага | `CHK-01` | `EVID-01` | Как подтверждаем завершение | `PRE-01`, `OQ-01`, `STEP-LAYERS-SPEC-TEST` | `AG-01` / `none` | Когда нельзя продолжать без эскалации |
+| `STEP-01` | human / agent / either | `REQ-01`, `REQ-02`, `CTR-01` | Что делаем на этом шаге | Какие файлы, сервисы или данные трогаем | Что должно появиться после шага | `CHK-01` | `EVID-01` | Как подтверждаем завершение | `PRE-01`, `OQ-01` | `AG-01` / `none` | Когда нельзя продолжать без эскалации |
+| `STEP-EVAL-CREATE` | agent | - | Создание eval suite для фичи | `eval/suite/happy-path.md`, `edge-cases.md`, `regression.md` | Eval suite создан со всеми required cases | `CP-EVAL-SUITE` | `EVID-EVAL-SUITE` | Проверка: `eval/suite/*.md` существуют и валидны | `PRE-01` | `none` | Если suite не может быть создан — эскалация |
 | `STEP-LAYERS-REVIEW` | agent | - | Проверка архитектурных границ Layered Rails | Новые/изменённые файлы после реализации | Ревью-отчёт без критических нарушений | `CP-LAYERS` | `EVID-LAYERS` | `/layers:review` на всех новых/изменённых файлах | `All implementation steps` | `none` | При критических нарушениях — эскалация в ADR |
+| `STEP-EVAL-RUN` | agent | - | Выполнение eval suite и финальная верификация | `eval/results/summary.md` | Eval suite пройден: accept/revise/escalate decision | `CP-EVAL-RUN` | `EVID-EVAL-RUN` | `/eval:run` или manual execution по strategy.md | `STEP-LAYERS-REVIEW` | `none` | При critical regression — эскалация |
 
 ## Parallelizable Work
 
@@ -154,12 +183,12 @@ must_not_define:
 
 Какие промежуточные точки должны быть пройдены до rollout или handoff.
 
-**Layered Rails Review Checkpoint:** После написания кода обязателен запуск `/layers:review` на всех новых/изменённых файлах для проверки архитектурных границ (нет ли прямых обращений к моделям в контроллере, бизнес-логики вне operations layer и т.д.).
-
 | Checkpoint ID | Refs | Condition | Evidence IDs |
 | --- | --- | --- | --- |
 | `CP-01` | `STEP-01`, `CHK-01` | Какой промежуточный state должен быть доказан | `EVID-01` |
+| `CP-EVAL-SUITE` | `STEP-EVAL-CREATE` | Eval suite создан: `eval/suite/*.md` существуют и валидны | `EVID-EVAL-SUITE` |
 | `CP-LAYERS` | `All steps` | `/layers:review` пройден без критических нарушений архитектурных границ | `EVID-LAYERS` |
+| `CP-EVAL-RUN` | `STEP-EVAL-RUN` | Eval suite выполнен: decision accept/revise/escalate | `EVID-EVAL-RUN` |
 
 ## Execution Risks
 
@@ -181,7 +210,10 @@ must_not_define:
 
 Какие условия должны выполниться, чтобы считать план исчерпанным и перейти к финальной приемке по секции `Verify` в sibling `feature.md`.
 
+**Обязательные eval условия:**
+- `EVID-EVAL-SUITE`: Eval suite создан: `eval/suite/happy-path.md`, `edge-cases.md`, `regression.md` существуют и содержат валидные test cases
+- `EVID-EVAL-RUN`: Eval suite выполнен: `/eval:run` для этой фичи возвращает `accept` или `revise` с понятными next steps
+
 **Обязательные Layered Rails условия:**
-- `EVID-LAYERS-SPEC`: `/layers:spec-test` выполнен на всех затрагиваемых файлах при планировании
 - `EVID-LAYERS`: `/layers:review` выполнен на всех новых/изменённых файлах после реализации, критических нарушений архитектурных границ нет
 ```
