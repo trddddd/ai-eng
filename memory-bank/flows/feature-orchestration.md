@@ -35,8 +35,16 @@ audience: humans_and_agents
        ▼
  ФАЗА 1: BRIEF
  Сессия А (Opus, чистый контекст)
- - обсуждение проблемы в чате
- - brief.md → GitHub Issue
+ - агент обсуждает проблему в чате (4 оси: проблема / для кого / откуда / результат)
+ - агент НЕ предлагает решение — только проблему и намерение
+ - агент создаёт черновик brief.md по шаблону flows/templates/feature/brief.md
+ - агент запускает ревью brief.md через ОТДЕЛЬНЫЙ субагент (model: opus)
+   - 5 критериев: конкретность, стейкхолдер, контекст, нет решения, нет двусмысленностей
+   - самопроверка недопустима
+ - если замечания → исправляет brief.md → повторяет ревью
+ - «0 замечаний» → GitHub Issue → brief.md удаляется
+ - STOP-gate: предлагает новую сессию для bootstrapping
+   (override: «делай сабагентом» — через subagent)
  - feature package создан (README.md + feature.md: draft)
        │
        │  GATE: brief review → "0 замечаний"
@@ -95,7 +103,7 @@ audience: humans_and_agents
 
 | Из | В | Триггер | Кто принимает решение |
 |----|---|---------|----------------------|
-| `draft` + `planned` | `active` + `planned` (Design Ready) | Brief review прошёл: 0 замечаний, SC-*, CHK-*, EVID-* заполнены | Агент + человек |
+| `draft` + `planned` | `active` + `planned` (Design Ready) | Brief review прошёл (субагент, 0 замечаний) → GitHub Issue → bootstrap feature package → SC-*, CHK-*, EVID-* заполнены | Агент + человек |
 | `active` + `planned` | `active` + `planned` (Plan Ready) | implementation-plan.md создан, eval suite создан, пользователь подтвердил план | Человек (явное подтверждение) |
 | `active` + `planned` | `active` + `in_progress` | EnterWorktree выполнен, attempt-1 создан, write-action начат | Агент (после подтверждения плана) |
 | `active` + `in_progress` | `active` + `done` | /eval:run → accept, все CHK-* pass, layers review, simplify пройдены | Агент + /eval:run |

@@ -160,11 +160,61 @@ Eval — отдельный слой верификации, живёт в `feat
 
 Запуск: `/eval:run` command → evaluator agent executes suite → decision (accept/revise/escalate).
 
+### New Feature Request — ОБЯЗАТЕЛЬНЫЙ ВХОД
+
+Когда получена задача «начнём следующую фичу», «давай сделаем X», «работаем над FT-XXX из PRD-YYY» или любой запрос на создание новой фичи — агент обязан пройти через brief phase. **Запрещено** сразу создавать GitHub Issue, feature package или писать код.
+
+#### Шаг 1: Обсуждение проблемы
+
+Агент задаёт уточняющие вопросы по четырём осям (проблема / для кого / откуда / что хотим). Если upstream PRD существует — агент читает его и domain контекст, затем обсуждает feature-specific delta.
+
+Агент **не предлагает решение** на этом этапе. Brief — только проблема и намерение.
+
+#### Шаг 2: Создание brief.md
+
+Агент создаёт черновик `brief.md` по шаблону [`templates/feature/brief.md`](templates/feature/brief.md) во временный каталог `features/FT-XXX/` (XXX = порядковый номер или placeholder). Brief содержит 4 секции: Проблема / Для кого / Происхождение / Желаемый результат.
+
+#### Шаг 3: Ревью brief.md через субагент
+
+Агент запускает ревью brief.md через **отдельный субагент** (`model: opus`). Ревью проверяет 5 критериев (подробнее в `templates/feature/brief.md` → секция «Ревью брифа»):
+
+1. Проблема конкретна и измерима
+2. Назван стейкхолдер
+3. Понятен контекст
+4. Brief НЕ содержит решения
+5. Нет двусмысленных формулировок
+
+Для каждого критерия — явный PASS/FAIL с цитатой и предложением. **Самопроверка недопустима** — только отдельный субагент.
+
+#### Шаг 4: Исправление и повтор ревью
+
+Если есть замечания — агент исправляет brief.md и повторяет ревью (шаг 3). Цикл продолжается до «0 замечаний».
+
+#### Шаг 5: Создание GitHub Issue
+
+Только после «0 замечаний, Brief готов к работе» — агент создаёт GitHub Issue с текстом brief.
+
+#### Шаг 6: Удаление brief.md
+
+Агент удаляет `brief.md`. GitHub Issue остаётся единственным source of truth.
+
+#### Шаг 7: STOP-gate
+
+Агент сообщает номер issue и предлагает начать новую сессию с Opus для bootstrapping:
+
+> Issue #XXX создан. Для bootstrapping feature package начни новую сессию командой `/model opus` (или `claude --model opus-4-6`).
+
+**Override:** Если пользователь явно запросил продолжение в текущей сессии (например, «делай просто сабагентом»), STOP-gate снимается. Агент использует subagent с Opus для bootstrapping.
+
+#### Шаг 8: Bootstrap feature package
+
+В новой сессии (или через subagent при override) — агент bootstraps: `README.md` + `feature.md` (draft).
+
 ### Bootstrap Feature Package
 
-**Предшествует bootstrap:** агент обсуждает с пользователем проблему в чате, затем создаёт GitHub Issue со ссылкой на него. Номер issue становится XXX в имени пакета `FT-XXX/`.
+**Предшествует bootstrap:** brief phase пройден (шаги 1–7 выше). GitHub Issue создан с «0 замечаний» по brief review. Номер issue становится XXX в имени пакета `FT-XXX/`.
 
-- [ ] GitHub Issue прошёл ревью по критериям из `templates/feature/brief.md` — результат «0 замечаний»
+- [ ] Brief phase пройдена: brief.md → ревью → 0 замечаний → GitHub Issue → brief.md удалён
 - [ ] GitHub Issue создан, номер известен
 - [ ] `README.md` создан по шаблону `templates/feature/README.md`
 - [ ] `feature.md` создан по шаблону `short.md` или `large.md`
