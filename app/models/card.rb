@@ -2,6 +2,12 @@ class Card < ApplicationRecord
   belongs_to :user
   belongs_to :sentence_occurrence
   has_many :review_logs, dependent: :destroy
+  has_one :user_lexeme_state, ->(card) { where(lexeme_id: card.lexeme_id) },
+          class_name: "UserLexemeState",
+          foreign_key: :user_id,
+          primary_key: :user_id,
+          dependent: nil,
+          inverse_of: false
 
   delegate :lexeme, :sentence, :form, :cloze_text, :sense, :context_family, to: :sentence_occurrence
 

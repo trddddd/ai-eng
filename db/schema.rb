@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_14_200925) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_16_012523) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -143,6 +143,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_200925) do
     t.index ["tatoeba_id"], name: "index_sentences_on_tatoeba_id"
   end
 
+  create_table "user_context_family_coverages", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.uuid "context_family_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "first_correct_at", null: false
+    t.uuid "lexeme_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "lexeme_id", "context_family_id"], name: "idx_user_ctx_family_cov_on_user_lexeme_ctx_family", unique: true
+    t.index ["user_id"], name: "index_user_context_family_coverages_on_user_id"
+  end
+
+  create_table "user_lexeme_states", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.integer "covered_family_count", default: 0, null: false
+    t.integer "covered_sense_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.decimal "family_coverage_pct", precision: 5, scale: 2, default: "0.0", null: false
+    t.datetime "last_covered_at"
+    t.uuid "lexeme_id", null: false
+    t.decimal "sense_coverage_pct", precision: 5, scale: 2, default: "0.0", null: false
+    t.integer "total_family_count", default: 0, null: false
+    t.integer "total_sense_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "lexeme_id"], name: "index_user_lexeme_states_on_user_id_and_lexeme_id", unique: true
+    t.index ["user_id"], name: "index_user_lexeme_states_on_user_id"
+  end
+
+  create_table "user_sense_coverages", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "first_correct_at", null: false
+    t.uuid "sense_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "sense_id"], name: "index_user_sense_coverages_on_user_id_and_sense_id", unique: true
+    t.index ["user_id"], name: "index_user_sense_coverages_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -165,4 +202,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_14_200925) do
   add_foreign_key "sentence_translations", "languages", column: "target_language_id"
   add_foreign_key "sentence_translations", "sentences", on_delete: :restrict
   add_foreign_key "sentences", "languages"
+  add_foreign_key "user_context_family_coverages", "context_families", on_delete: :cascade
+  add_foreign_key "user_context_family_coverages", "lexemes", on_delete: :cascade
+  add_foreign_key "user_context_family_coverages", "users", on_delete: :cascade
+  add_foreign_key "user_lexeme_states", "lexemes", on_delete: :cascade
+  add_foreign_key "user_lexeme_states", "users", on_delete: :cascade
+  add_foreign_key "user_sense_coverages", "senses", on_delete: :cascade
+  add_foreign_key "user_sense_coverages", "users", on_delete: :cascade
 end

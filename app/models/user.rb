@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_secure_password
 
   has_many :cards, dependent: :destroy
+  has_many :user_lexeme_states, dependent: :destroy
 
   validates :email,
             presence: true,
