@@ -23,13 +23,21 @@ audience: humans_and_agents
 - Issue ref через `(#N)` в конце: `fix(002): drop fork CI (#20)`
 - Auto-close keywords: `Closes #N`, `Fixes #N`
 
-## Branches
+## Branches / Worktrees
 
 - Feature: `feat/short-description` (например `feat/starter-deck`)
 - Fix: `fix/short-description`
 - Удаляются после merge в main.
 
-**Правило:** перед первым созданием или изменением **любых файлов проекта** (включая документацию в `memory-bank/`) агент создаёт ветку автономно (`git checkout -b feat/...`). Это часть gate "Plan Ready → Execution" в `flows/feature-flow.md`. Работа напрямую в `main` недопустима.
+**Feature-flow rule:** перед первым write-action в стадии Execution агент создаёт отдельный worktree для attempt-а:
+
+```bash
+git worktree add -b feat/ft-XXX-att1 ../lingvize-ft-XXX-att1
+```
+
+Простая смена ветки через `git checkout -b` не считается attempt isolation.
+
+**Small-task exception:** для коротких документационных или review-only задач можно работать в текущей ветке, если пользователь явно попросил это сделать и задача не запускает feature Execution. Работа напрямую в `main` для feature implementation остаётся недопустимой.
 
 ## Pull Requests
 

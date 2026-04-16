@@ -13,7 +13,7 @@ template_target_path: ../../../features/FT-XXX/eval/strategy.md
 
 # FT-XXX: Eval Strategy Template
 
-Eval strategy — 4-слойная верификация, исполняемая при Design Ready и перед Done.
+Eval strategy — 5 локальных eval layers для feature lifecycle. Они мапятся на conceptual уровни курса: spec-level, artifact-level, execution-level, workflow-level.
 
 ## Wrapper Notes
 
@@ -30,7 +30,7 @@ Eval strategy — 4-слойная верификация, исполняема�
 
 | Слой | Проверяет | Evidence | Авто? | Owner |
 |-------|-----------|----------|--------|--------|
-| 1. Гигиена | lint, typecheck, build | ✅ | CI |
+| 1. Гигиена | lint, test bootstrap, build/checks configured for project | ✅ | CI/local |
 | 2. Plan coverage | REQ-* → STEP-* | ⚠️ | subagent |
 | 3. Acceptance | CHK-* → EVID-* | ⚠️ | executor + human |
 | 4. Workflow | trajectory, пропущенные шаги | ⚠️ | evaluator |
@@ -65,8 +65,8 @@ eval/
 | Check | Command | Evidence |
 |-------|---------|----------|
 | Lint pass? | `bundle exec rubocop` | `artifacts/lint.log` |
-| Typecheck pass? | `bundle exec rbspy` | `artifacts/typecheck.log` |
-| Build pass? | `bundle exec rails build` | CI log |
+| Test pass? | `bundle exec rspec` | `artifacts/rspec.log` |
+| Typecheck/build pass? | `N/A unless configured` | CI log / `N/A` |
 
 ### 2. Plan Coverage
 

@@ -32,8 +32,9 @@ template_target_path: ../../../features/FT-XXX/implementation-plan.md
 После написания кода — запуск `/layers:review` на новых/изменённых файлах для проверки архитектурных границ.
 
 **Eval обязательные проверки:**
-- `STEP-EVAL-CREATE`: Создание eval suite до начала реализации (Design Ready → Plan Ready)
+- `STEP-EVAL-VERIFY`: Проверка, что eval suite создан до начала реализации (Design Ready → Plan Ready)
 - `STEP-EVAL-RUN`: Выполнение eval suite перед переходом в Done (Execution → Done)
+- `STEP-SIMPLIFY`: Simplify review после `/layers:review` и до `/eval:run`
 
 Когда feature переходит в `delivery_status: done` или `delivery_status: cancelled`, `implementation-plan.md` архивируется, если он больше не используется как рабочий execution-документ.
 
@@ -102,7 +103,7 @@ must_not_define:
 
 | Area | Contract | Used by | Failure symptom |
 | --- | --- | --- | --- |
-| git | Feature branch `feat/XXX-...` активна (`git branch --show-current` не `main`) | All steps | Агент работает прямо в `main` — стоп, создать ветку: `git checkout -b feat/XXX-short-desc` |
+| git | Attempt worktree создан (`git worktree list` содержит `../lingvize-ft-XXX-att1`, branch `feat/ft-XXX-att1`) | All implementation steps | Агент работает прямо в основном checkout или `main` — стоп, создать worktree: `git worktree add -b feat/ft-XXX-att1 ../lingvize-ft-XXX-att1` |
 | setup | Какая подготовка среды обязательна | `STEP-01`, `STEP-02` | По какому симптому понятно, что среда невалидна |
 | test | Какая команда или процедура считается эталонной для verify на этом этапе | `CHK-01` | Что считается недостоверным verify |
 | access / network / secrets | Какие доступы, домены, ключи или sandbox assumptions нужны | `STEP-03` | Когда работа должна остановиться и уйти на эскалацию |
@@ -113,7 +114,7 @@ must_not_define:
 
 | Precondition ID | Canonical ref | Required state | Used by steps | Blocks start |
 | --- | --- | --- | --- | --- |
-| `PRE-GIT` | `engineering/git-workflow.md` | Feature branch `feat/XXX-short-desc` создана от `main`; `git branch --show-current` → `feat/...`, не `main` | All steps | **yes** — создать автономно до первого изменения кода: `git checkout -b feat/XXX-short-desc` |
+| `PRE-GIT` | `engineering/git-workflow.md` | Attempt worktree `../lingvize-ft-XXX-att1` создан от `main`; внутри worktree `git branch --show-current` → `feat/ft-XXX-att1` | All implementation steps | **yes** — создать автономно до первого изменения кода: `git worktree add -b feat/ft-XXX-att1 ../lingvize-ft-XXX-att1` |
 | `PRE-01` | `ASM-01` / `DEC-01` / `CON-01` / ADR path | Какой state upstream считается допустимым для старта | `STEP-01`, `STEP-02` | yes / no |
 
 ## Orchestration Pattern
@@ -168,9 +169,10 @@ _Если human control не нужен — оставь одну строку: 
 | Step ID | Actor | Implements | Goal | Touchpoints | Artifact | Verifies | Evidence IDs | Check command / procedure | Blocked by | Needs approval | Escalate if |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `STEP-01` | human / agent / either | `REQ-01`, `REQ-02`, `CTR-01` | Что делаем на этом шаге | Какие файлы, сервисы или данные трогаем | Что должно появиться после шага | `CHK-01` | `EVID-01` | Как подтверждаем завершение | `PRE-01`, `OQ-01` | `AG-01` / `none` | Когда нельзя продолжать без эскалации |
-| `STEP-EVAL-CREATE` | agent | - | Создание eval suite для фичи | `eval/suite/happy-path.md`, `edge-cases.md`, `regression.md` | Eval suite создан со всеми required cases | `CP-EVAL-SUITE` | `EVID-EVAL-SUITE` | Проверка: `eval/suite/*.md` существуют и валидны | `PRE-01` | `none` | Если suite не может быть создан — эскалация |
+| `STEP-EVAL-VERIFY` | agent | - | Проверить, что eval suite создан до кода и покрывает `SC-*` / `NEG-*` | `eval/suite/happy-path.md`, `edge-cases.md`, `regression.md` | Eval suite verified | `CP-EVAL-SUITE` | `EVID-EVAL-SUITE` | Проверка: `eval/suite/*.md` существуют и валидны | `none` | `none` | Если suite отсутствует или невалиден — создать/обновить до worktree |
 | `STEP-LAYERS-REVIEW` | agent | - | Проверка архитектурных границ Layered Rails | Новые/изменённые файлы после реализации | Ревью-отчёт без критических нарушений | `CP-LAYERS` | `EVID-LAYERS` | `/layers:review` на всех новых/изменённых файлах | `All implementation steps` | `none` | При критических нарушениях — эскалация в ADR |
-| `STEP-EVAL-RUN` | agent | - | Выполнение eval suite и финальная верификация | `eval/results/summary.md` | Eval suite пройден: accept/revise/escalate decision | `CP-EVAL-RUN` | `EVID-EVAL-RUN` | `/eval:run` или manual execution по strategy.md | `STEP-LAYERS-REVIEW` | `none` | При critical regression — эскалация |
+| `STEP-SIMPLIFY` | agent | - | Проверить, что решение минимально сложно, а оставшаяся complexity обоснована upstream refs | Новые/изменённые файлы после реализации | Simplify review report | `CP-SIMPLIFY` | `EVID-SIMPLIFY` | `/simplify` | `STEP-LAYERS-REVIEW` | `none` | Complexity не обоснована — revise до eval run |
+| `STEP-EVAL-RUN` | agent | - | Выполнение eval suite и финальная верификация | `eval/results/summary.md` | Eval suite пройден: accept/revise/escalate/split decision | `CP-EVAL-RUN` | `EVID-EVAL-RUN` | `/eval:run` или manual execution по strategy.md | `STEP-SIMPLIFY` | `none` | При critical regression — эскалация |
 
 ## Parallelizable Work
 
@@ -186,9 +188,10 @@ _Если human control не нужен — оставь одну строку: 
 | Checkpoint ID | Refs | Condition | Evidence IDs |
 | --- | --- | --- | --- |
 | `CP-01` | `STEP-01`, `CHK-01` | Какой промежуточный state должен быть доказан | `EVID-01` |
-| `CP-EVAL-SUITE` | `STEP-EVAL-CREATE` | Eval suite создан: `eval/suite/*.md` существуют и валидны | `EVID-EVAL-SUITE` |
+| `CP-EVAL-SUITE` | `STEP-EVAL-VERIFY` | Eval suite создан: `eval/suite/*.md` существуют и валидны | `EVID-EVAL-SUITE` |
 | `CP-LAYERS` | `All steps` | `/layers:review` пройден без критических нарушений архитектурных границ | `EVID-LAYERS` |
-| `CP-EVAL-RUN` | `STEP-EVAL-RUN` | Eval suite выполнен: decision accept/revise/escalate | `EVID-EVAL-RUN` |
+| `CP-SIMPLIFY` | `STEP-SIMPLIFY` | `/simplify` выполнен; complexity минимальна или обоснована upstream refs | `EVID-SIMPLIFY` |
+| `CP-EVAL-RUN` | `STEP-EVAL-RUN` | Eval suite выполнен: decision accept/revise/escalate/split | `EVID-EVAL-RUN` |
 
 ## Execution Risks
 
@@ -216,4 +219,7 @@ _Если human control не нужен — оставь одну строку: 
 
 **Обязательные Layered Rails условия:**
 - `EVID-LAYERS`: `/layers:review` выполнен на всех новых/изменённых файлах после реализации, критических нарушений архитектурных границ нет
+
+**Обязательные simplify условия:**
+- `EVID-SIMPLIFY`: `/simplify` выполнен после `/layers:review` и до `/eval:run`; оставшаяся complexity обоснована ссылками на upstream refs
 ```

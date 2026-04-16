@@ -1,37 +1,37 @@
 ---
-title: "Brief Template"
+title: "Transient Brief Template"
 doc_kind: governance
 doc_function: template
-purpose: "Governed wrapper-шаблон для brief.md — первого артефакта feature package. Читать, чтобы знать как агент формирует brief после диалога с пользователем."
+purpose: "Governed wrapper-шаблон transient brief draft. Читать, чтобы знать как агент формирует brief после диалога с пользователем до создания GitHub Issue."
 derived_from:
   - ../../feature-flow.md
 status: active
 audience: humans_and_agents
 template_for: brief
-template_target_path: ../../../features/FT-XXX/brief.md
+template_target_path: transient:/tmp-or-issue-draft
 ---
 
-# Brief Template
+# Transient Brief Template
 
-Brief — входная точка feature package. Фиксирует проблему, но не описывает решение.
+Brief — входная точка feature package. Фиксирует проблему, но не описывает решение. Durable source of truth после ревью — GitHub Issue; persistent `memory-bank/features/FT-XXX/brief.md` не создаётся.
 
 ## Workflow создания брифа
 
 1. Пользователь описывает идею свободно в чате.
 2. Агент задаёт уточняющие вопросы по четырём осям (проблема / для кого / откуда / что хотим).
-3. После согласования — агент создаёт черновик `brief.md` (без issue-ссылки, номер ещё неизвестен).
+3. После согласования — агент создаёт transient draft в чате, `/tmp` или issue draft (без issue-ссылки, номер ещё неизвестен).
 4. **Агент прогоняет бриф через ревью субагентом (см. ниже) и фиксирует замечания в чате — построчно по каждому из 5 критериев, с явным pass/fail.** Ревью обязательно выполняется через отдельный субагент (`model: opus`) — самопроверка недопустима и даёт ложноположительные результаты. До вызова `gh issue create` в чате должно быть видно «0 замечаний, Brief готов к работе».
-5. Если замечания есть — агент исправляет `brief.md` и повторяет ревью.
+5. Если замечания есть — агент исправляет transient draft и повторяет ревью.
 6. Только после «0 замечаний» — агент создаёт GitHub Issue.
 7. ⛔ **STOP-gate.** Агент сообщает пользователю номер issue и предлагает начать новую сессию с Opus для bootstrapping:
    > Issue #XXX создан. Для bootstrapping feature package начни новую сессию командой `/model opus` (или `claude --model opus-4-6`), чтобы получить чистый контекст и более качественный `feature.md`.
-8. **Override:** Если пользователь явно запросил продолжение в текущей сессии (например, «делай просто сабагентом»), STOP-gate снимается. Агент использует subagent с Opus для bootstrapping вместо новой сессии. При этом brief.md всё равно удаляется — GitHub Issue остаётся единственным source of truth.
-9. **[новая сессия Opus или subagent]** Агент удаляет `brief.md`, оставляя только GitHub Issue.
+8. **Override:** Если пользователь явно запросил продолжение в текущей сессии (например, «делай просто сабагентом»), STOP-gate снимается. Агент использует subagent с Opus для bootstrapping вместо новой сессии. При этом transient draft удаляется, если был файлом — GitHub Issue остаётся единственным source of truth.
+9. **[новая сессия Opus или subagent]** Агент проверяет, что persistent `brief.md` в feature package не создан; если был создан как временный файл, удаляет его.
 10. **[новая сессия Opus или subagent]** Агент bootstraps feature package: `README.md` + `feature.md` (draft).
 
 ## Ревью брифа
 
-Перед bootstrap feature package агент проверяет `brief.md` по пяти критериям:
+Перед bootstrap feature package агент проверяет transient brief draft по пяти критериям:
 
 1. Проблема конкретна и измерима (не «улучшить», а конкретная метрика или боль).
 2. Назван стейкхолдер или пользователь, для которого решаем.
@@ -63,8 +63,6 @@ Brief — входная точка feature package. Фиксирует проб
 
 ```markdown
 # Brief: [Название]
-
-> GitHub Issue: [owner/repo#XXX](https://github.com/owner/repo/issues/XXX)
 
 ## Проблема
 

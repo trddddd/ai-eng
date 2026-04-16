@@ -78,7 +78,7 @@ audience: humans_and_agents
 
 **Если `delivery_status: planned` и план подтверждён (= Plan Ready → Execution):**
 
-5. Создать git worktree: `git worktree add -b feat/ft-XXX-att1 ../lingvize-ft-XXX-att1`
+5. Создать git worktree: `git worktree add -b feat/ft-XXX-att1 ../lingvize-ft-XXX-att1` (или использовать `EnterWorktree`, если wrapper доступен)
 6. Создать `attempts/attempt-1/meta.yaml` и `start.md` по шаблону `flows/templates/feature/attempt.md`
 7. Обновить `delivery_status: in_progress` в `feature.md`
 8. Писать код внутри worktree
@@ -88,7 +88,7 @@ audience: humans_and_agents
 1. Прочитать `implementation-plan.md` — найти незакрытые `STEP-*`
 2. Продолжить с первого незакрытого шага в worktree
 
-Никогда не писать код напрямую в main без worktree.
+Никогда не писать feature implementation напрямую в `main` без worktree. Исключение — короткие documentation/review-only правки в текущей ветке по явному запросу пользователя.
 
 ## Эскалация — остановись и спроси
 

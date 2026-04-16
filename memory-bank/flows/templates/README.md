@@ -30,3 +30,4 @@ audience: humans_and_agents
 - [FT-XXX: Attempt Template](feature/attempt.md) — шаблон для attempt-tracking. Отвечает на вопрос: как структурировать attempt с worktree isolation.
 - [ADR-XXX: Short Decision Name](adr/ADR-XXX.md) — шаблон ADR. Отвечает на вопрос: как зафиксировать архитектурное решение.
 - [Eval Strategy Template](eval/strategy.md) — шаблон eval strategy для фичи. Отвечает на вопрос: как определить eval layers и suite.
+- [Eval Suite Templates](eval/suite/) — шаблоны happy-path, edge-cases и regression cases для feature-level eval.

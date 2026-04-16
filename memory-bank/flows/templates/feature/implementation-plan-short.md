@@ -54,6 +54,12 @@ must_not_define:
 | --- | --- | --- |
 | `path/to/file` | Что делает | Почему меняется |
 
+## Execution Isolation
+
+| Area | Contract |
+| --- | --- |
+| worktree | Execution идёт в attempt worktree `../lingvize-ft-XXX-att1` на branch `feat/ft-XXX-att1`; `git checkout -b` в основном checkout не считается attempt isolation |
+
 ## Layered Rails
 
 [Пометка: N/A — change surface не затрагивает layered code, если применимо.]

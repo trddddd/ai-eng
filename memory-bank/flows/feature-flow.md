@@ -84,20 +84,6 @@ flowchart LR
 
 Каждый gate — набор проверяемых предикатов. Переход допустим тогда и только тогда, когда все предикаты истинны.
 
-### Execution → Done
-
-- [ ] все `CHK-*` из `feature.md` имеют результат pass/fail в evidence
-- [ ] все `EVID-*` из `feature.md` заполнены конкретными carriers (путь к файлу, CI run, screenshot)
-- [ ] automated tests для change surface добавлены или обновлены
-- [ ] required test suites зелёные локально и в CI
-- [ ] каждый manual-only gap явно approved человеком (approval ref в `AG-*`)
-- [ ] **Layered Rails: `/layers:review`** выполнен на всех новых/изменённых файлах, критических нарушений архитектурных границ нет. **Exception:** если change surface затрагивает только views/CSS/config — шаг пропускается с пометкой `N/A: no layered code in change surface`
-- [ ] simplify review выполнен: код минимально сложен или complexity обоснована ссылкой на `CON-*`, `FM-*` или `DEC-*`
-- [ ] если feature добавляет новый устойчивый сценарий проекта или materially changes существующий project-level scenario, соответствующий `UC-*` создан или обновлен и зарегистрирован в `memory-bank/use-cases/README.md`
-- [ ] `feature.md` → `delivery_status: done`
-- [ ] `implementation-plan.md` → `status: archived`
-- [ ] **Eval suite выполнена:** `/eval:run` для этой фичи возвращает pass
-
 ### Orchestration Patterns
 
 Перед стартом первого attempt агент обязан выбрать один из трёх паттернов и зафиксировать выбор в `meta.yaml` attempt-а.
@@ -131,7 +117,7 @@ flowchart LR
 ```
 
 Правила:
-- Каждый attempt создаётся через инструмент `EnterWorktree` (не `git checkout -b`)
+- Каждый attempt создаётся в отдельном `git worktree` (через `EnterWorktree`, если такой wrapper доступен; иначе через `git worktree add -b ...`). Простая смена ветки через `git checkout -b` не считается изоляцией attempt-а.
 - После accept/merge: worktree удаляется
 - Evidence (`EVID-*`) обязательна для каждого `CHK-*` перед переходом к следующей попытке
 - После 3 неудачных attempts — эскалация ("loop detected → upstream problem")
@@ -158,7 +144,13 @@ Eval — отдельный слой верификации, живёт в `feat
 - `eval/suite/edge-cases.md` — граничные случаи
 - `eval/suite/regression.md` — проверка на регрессию
 
-Запуск: `/eval:run` command → evaluator agent executes suite → decision (accept/revise/escalate).
+Запуск: `/eval:run` command → evaluator agent executes suite → decision (accept/revise/escalate/split).
+
+Decision predicates:
+- `accept` — все critical eval cases pass, required `CHK-*` и `EVID-*` закрыты concrete carriers.
+- `revise` — failure локален, scope не меняется, исправление укладывается в текущий attempt/revise loop.
+- `escalate` — critical regression, missing mandatory evidence после допустимых revise-итераций или нужен human architectural decision.
+- `split` — execution/eval выявил независимый scope growth: продолжение требует нового feature package или разделения release risk.
 
 ### New Feature Request — ОБЯЗАТЕЛЬНЫЙ ВХОД
 
@@ -170,13 +162,13 @@ Eval — отдельный слой верификации, живёт в `feat
 
 Агент **не предлагает решение** на этом этапе. Brief — только проблема и намерение.
 
-#### Шаг 2: Создание brief.md
+#### Шаг 2: Создание transient brief draft
 
-Агент создаёт черновик `brief.md` по шаблону [`templates/feature/brief.md`](templates/feature/brief.md) во временный каталог `features/FT-XXX/` (XXX = порядковый номер или placeholder). Brief содержит 4 секции: Проблема / Для кого / Происхождение / Желаемый результат.
+Агент создаёт transient draft по шаблону [`templates/feature/brief.md`](templates/feature/brief.md) в чате, `/tmp` или issue draft. Persistent `memory-bank/features/FT-XXX/brief.md` не создаётся. Brief содержит 4 секции: Проблема / Для кого / Происхождение / Желаемый результат.
 
-#### Шаг 3: Ревью brief.md через субагент
+#### Шаг 3: Ревью transient brief draft через субагент
 
-Агент запускает ревью brief.md через **отдельный субагент** (`model: opus`). Ревью проверяет 5 критериев (подробнее в `templates/feature/brief.md` → секция «Ревью брифа»):
+Агент запускает ревью transient brief draft через **отдельный субагент** (`model: opus`). Ревью проверяет 5 критериев (подробнее в `templates/feature/brief.md` → секция «Ревью брифа»):
 
 1. Проблема конкретна и измерима
 2. Назван стейкхолдер
@@ -188,15 +180,15 @@ Eval — отдельный слой верификации, живёт в `feat
 
 #### Шаг 4: Исправление и повтор ревью
 
-Если есть замечания — агент исправляет brief.md и повторяет ревью (шаг 3). Цикл продолжается до «0 замечаний».
+Если есть замечания — агент исправляет transient brief draft и повторяет ревью (шаг 3). Цикл продолжается до «0 замечаний».
 
 #### Шаг 5: Создание GitHub Issue
 
 Только после «0 замечаний, Brief готов к работе» — агент создаёт GitHub Issue с текстом brief.
 
-#### Шаг 6: Удаление brief.md
+#### Шаг 6: Удаление transient draft
 
-Агент удаляет `brief.md`. GitHub Issue остаётся единственным source of truth.
+Агент удаляет transient draft, если он был создан как файл. GitHub Issue остаётся единственным durable source of truth для brief.
 
 #### Шаг 7: STOP-gate
 
@@ -214,7 +206,7 @@ Eval — отдельный слой верификации, живёт в `feat
 
 **Предшествует bootstrap:** brief phase пройден (шаги 1–7 выше). GitHub Issue создан с «0 замечаний» по brief review. Номер issue становится XXX в имени пакета `FT-XXX/`.
 
-- [ ] Brief phase пройдена: brief.md → ревью → 0 замечаний → GitHub Issue → brief.md удалён
+- [ ] Brief phase пройдена: transient brief draft → ревью → 0 замечаний → GitHub Issue → transient draft удалён, если был файлом
 - [ ] GitHub Issue создан, номер известен
 - [ ] `README.md` создан по шаблону `templates/feature/README.md`
 - [ ] `feature.md` создан по шаблону `short.md` или `large.md`
@@ -246,7 +238,7 @@ Eval — отдельный слой верификации, живёт в `feat
 - [ ] evidence pre-declaration заполнена в `implementation-plan.md`: ожидаемые `EVID-*` с путями и producing steps — **до написания кода**
 - [ ] orchestration pattern выбран (`sequential` / `parallel` / `delegated`) и зафиксирован в `implementation-plan.md` → Orchestration Pattern секция
 - [ ] Human Control Map заполнена в `implementation-plan.md` (или явно `none — fully autonomous`)
-- [ ] worktree создан через инструмент `EnterWorktree` — **не через `git checkout -b`**; `EnterWorktree` создаёт изолированную копию репозитория; простая ветка этого не обеспечивает
+- [ ] worktree создан через `EnterWorktree` или `git worktree add -b ...` — **не через `git checkout -b`**; worktree создаёт изолированную копию репозитория, простая ветка этого не обеспечивает
 - [ ] `attempts/attempt-1/meta.yaml` создан с `orchestration.*` и `human_control_points`; pre-attempt checklist в `start.md` отмечен
 - [ ] `feature.md` → `delivery_status: in_progress`
 - [ ] `implementation-plan.md` → `status: active`

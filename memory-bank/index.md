@@ -116,7 +116,7 @@ MVP: контент-пайплайн (Oxford/NGSL/Quizword), стартовая 
 ### Реестры
 
 - [features/README.md](features/README.md)
-  **Что:** Feature packages: FT-002—FT-008, FIX-001—FIX-002 (все done).
+  **Что:** Реестр feature packages и fixes: legacy FT-002—FT-008/FIX-001—FIX-002, современные governed packages FT-023+.
   **Читать, чтобы:** найти или создать feature package.
 
 - [use-cases/README.md](use-cases/README.md)
@@ -152,10 +152,12 @@ Memory Bank ложится на 6 шагов Spec-Driven Development:
 | **Brief** | Прогрев: агент читает `index.md` → набирает контекст проекта | — |
 | **PRD** | PRD → продуктовая инициатива; grounding через `domain/` и `prd/` | [`.prompts/prd/review.md`](../.prompts/prd/review.md) |
 | **Feature** | Бриф → feature package; grounding через `domain/` и `prd/` | [`.prompts/feature/review.md`](../.prompts/feature/review.md) |
-| **Plan** | Декомпозиция фичи; `engineering/` определяет стиль и тестирование | `.prompts/plan/review.md` _(planned)_ |
-| **Implement** | Агент следует `engineering/` при написании кода | — |
-| **Verify** | AC из `feature.md`; верификация против плана | — |
+| **Plan** | Декомпозиция фичи; `engineering/` определяет стиль и тестирование | [`.prompts/plan/review.md`](../.prompts/plan/review.md) |
+| **Implement** | Агент следует `implementation-plan.md`, создаёт attempt и работает в worktree | [`.prompts/feature/create-attempt.md`](../.prompts/feature/create-attempt.md) |
+| **Verify** | Eval suite + AC из `feature.md`; верификация против плана и evidence | [`.prompts/eval/run.md`](../.prompts/eval/run.md) |
 | **Ship** | Обновление реестров, frontmatter → `done` | — |
+
+Полный каталог prompt-команд: [`.prompts/README.md`](../.prompts/README.md).
 
 ## Feature Lifecycle — Quick Reference
 
@@ -164,7 +166,7 @@ Memory Bank ложится на 6 шагов Spec-Driven Development:
 | Стадия | `status` | `delivery_status` | Что делать | Код? |
 | --- | --- | --- | --- | --- |
 | Draft | `draft` | `planned` | Ревью спеки → Design Ready gates | Нет |
-| Design Ready | `active` | `planned` | Grounding + создать `implementation-plan.md` | Нет |
-| Plan Ready | `active` | `planned` | Создать ветку → кодить по плану | Да |
+| Design Ready | `active` | `planned` | Grounding + eval suite + создать `implementation-plan.md` | Нет |
+| Plan Ready | `active` | `planned` | Создать worktree + attempt → кодить по плану | Да |
 | Execution | `active` | `in_progress` | Кодить по `implementation-plan.md` | Да |
 | Done | `active` | `done` | Закрыть, обновить реестры | Нет |

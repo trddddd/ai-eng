@@ -40,6 +40,8 @@ attempt_id: attempt-N
 agent: builder
 model: opus-4.6
 branch: feat/ft-xxx-attN
+worktree_path: ../lingvize-ft-XXX-attN
+base_branch: main
 started_at: 2026-04-16T10:00:00Z
 
 previous_attempts: []  # links to previous attempts
@@ -60,6 +62,10 @@ human_control_points:
   - id: HC-01
     trigger: "условие"
     status: pending  # pending | approved | skipped
+
+planned_checks:
+  - CHK-01
+  - CHK-02
 ```
 
 ## start.md
@@ -86,6 +92,7 @@ human_control_points:
 - [ ] Orchestration pattern выбран и зафиксирован в `meta.yaml`
 - [ ] Human Control Map заполнена (или явно `none`)
 - [ ] Все `PRE-*` preconditions выполнены
+- [ ] Worktree создан и текущий checkout находится внутри `worktree_path`
 
 ## What to do this attempt
 
@@ -106,7 +113,7 @@ human_control_points:
 
 ## Outcome
 
-- **Decision:** [accept / revise / retry / abandon]
+- **Decision:** [accept / revise / retry / abandon / split]
 
 ## Results
 
@@ -135,7 +142,17 @@ human_control_points:
 - [ ] Retry this attempt (collect missing evidence)
 - [ ] Move to attempt-N+1 (new worktree)
 - [ ] Escalate (if 3 failed attempts)
+- [ ] Split scope into downstream feature package(s)
 ```
+
+## Attempt Acceptance Rules
+
+Attempt может получить `decision: accept` только если:
+- все `REQ-*`, выбранные для attempt-а, закрыты и перечислены в `Completed REQ-*`;
+- все relevant `CHK-*` из `planned_checks` имеют pass/fail verdict;
+- каждый passed `CHK-*` имеет конкретный `EVID-*` carrier;
+- manual-only gaps имеют approval ref из `AG-*` / `HC-*`;
+- `/eval:run` перед closure feature может использовать этот attempt как проверяемый evidence source.
 
 ## artifacts/
 

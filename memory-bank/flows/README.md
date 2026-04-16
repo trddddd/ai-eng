@@ -18,4 +18,5 @@ audience: humans_and_agents
 
 - [Task Workflows](workflows.md) — маршрутизация задач по типам, базовый цикл разработки и градиент автономии.
 - [Feature Flow](feature-flow.md) — lifecycle от draft до closure, gates и стабильные ID (`REQ-*`, `CHK-*`, `STEP-*`).
+- [Feature Orchestration Guide](feature-orchestration.md) — state transitions, resume protocol, attempts, worktree isolation и handoff.
 - [Templates Index](templates/README.md) — эталонные шаблоны governed-документов, включая PRD, use case, feature и ADR.

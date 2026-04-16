@@ -35,9 +35,9 @@ Brief может прийти из разных источников:
 Если источник — **существующий Issue:**
 - Прочитай Issue и дополни до формата Brief, если чего-то не хватает.
 
-### Шаг 2 — Черновик
+### Шаг 2 — Transient draft
 
-Сформируй Brief по шаблону:
+Сформируй Brief по шаблону в чате, `/tmp` или issue draft. Не создавай persistent `memory-bank/features/FT-XXX/brief.md`: после ревью GitHub Issue становится durable source of truth.
 
 ```markdown
 # Brief: [Название]
@@ -92,4 +92,4 @@ Brief может прийти из разных источников:
 
 1. Создай `memory-bank/features/FT-XXX/README.md` по шаблону.
 2. Создай `memory-bank/features/FT-XXX/feature.md` (draft) по шаблону `short.md` или `large.md`.
-3. `brief.md` не создаётся — GitHub Issue остаётся единственным source of truth.
+3. Persistent `brief.md` не создаётся — GitHub Issue остаётся единственным source of truth.
