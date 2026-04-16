@@ -35,6 +35,7 @@ audience: humans_and_agents
 | FT-025 | Dashboard MVP: progress cards | done | #25 | feat/025-dashboard-progress |
 | FT-027 | Cloze card: remove quotes and blinking cursor | done | #27 | main |
 | FT-029 | Lexeme Sense & Context Families | done | #29 | main |
+| FT-031 | Word Mastery State | done | #31 | feat/031-word-mastery-state |
 
 ## Legacy Note
 
