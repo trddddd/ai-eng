@@ -99,6 +99,8 @@ bin/rails console
 
 ## Known Pitfalls
 
+- PostgreSQL **только через Docker Compose** (`docker compose up -d`), **никогда** через `brew services start postgresql@*` — локальный PG не настроен, порт другой, данных нет. Перед запуском тестов: OrbStack запущен → `docker compose up -d` → `RAILS_ENV=test rails db:create db:schema:load` (если БД не существует).
+- **Worktree:** `docker compose up -d` в worktree создаёт отдельные volumes/network (`lingvize-ft-XXX-*`). Тестовая БД в worktree пустая — нужен `db:create db:schema:load` при первом запуске.
 - PostgreSQL порт **5433**, не 5432 — проверь `DATABASE_URL` или `config/database.yml`
 - `db:drop`, `db:reset` — **никогда** без явного подтверждения, даже для test env
 - Новые гемы — только с явного запроса

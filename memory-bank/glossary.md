@@ -164,6 +164,14 @@ DAG зависимостей между документами через `deriv
 
 Baseline-подход к WSD: берётся первый (самый частый) sense слова из WordNet. WordNet упорядочивает senses по частотности на основе SemCor. Для Oxford 5000 слов даёт ~70-75% accuracy. Не требует отдельного кода WSD.
 
+### Card Debt
+
+Множество карточек пользователя с `due <= now` и `mastered_at IS NULL`. Приоритетный источник для session builder: card debt заполняется первым, word debt — оставшиеся слоты. Введён в FT-036.
+
+### Word Debt
+
+Множество лексем пользователя с `family_coverage_pct < 100.0` в `UserLexemeState`, для которых существуют `SentenceOccurrence` с непокрытыми context families. Вторичный источник для session builder: заполняет оставшиеся слоты после card debt. Предпочитает occurrences из unseen context families. Введён в FT-036.
+
 ### Content Pipeline
 
 Пайплайн наполнения базы контентом: импорт лексем (Oxford 5000, NGSL) → глоссы (Poliglot) → предложения (Quizword) → sense-разметка (WordNet, FT-029) → контекстные семьи. Operations в `app/operations/content_bootstrap/`.

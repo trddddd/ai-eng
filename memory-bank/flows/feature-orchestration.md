@@ -56,9 +56,12 @@ audience: humans_and_agents
  - feature.md: status→active, delivery_status→planned
        │
        │  GATE: Design Ready checklist (SC-*, CHK-*, EVID-* заполнены)
+       │
+       │  STOP-gate: предлагает новую сессию для планирования
+       │  (override: «продолжай» — в текущей сессии)
        ▼
  ФАЗА 3: PLAN READY
- Сессия В (или продолжение Б)
+ Сессия В (новая сессия, свежий контекст)
  - grounding по change surface
  - eval suite создан (happy-path, edge-cases, regression)
  - implementation-plan.md создан, показан пользователю
@@ -246,6 +249,7 @@ git worktree add -b feat/ft-XXX-attN ../lingvize-ft-XXX-attN
   [продолжи FT-XXX] → Resume Protocol
   → Design Ready gates → spec review
   → feature.md: active + planned
+  → STOP-gate: «FT-XXX Design Ready. Продолжи FT-XXX в новой сессии для планирования.»
   → Конец сессии Б: сохранено feature.md: active
 
 Сессия В:
@@ -379,13 +383,33 @@ git worktree add -b feat/ft-XXX-attN ../lingvize-ft-XXX-attN
 
 ## Context Budget: STOP-gates для длинных сессий
 
-### Правило
+### Принцип
+
+> Каждая фаза lifecycle (brief, spec, plan, execution, verification) — отдельная единица контекста. STOP-gate между фазами предлагает новую сессию, чтобы начать следующую фазу со свежим контекстом.
+
+### STOP-gate между Design Ready и Plan Ready
+
+После: feature.md → `status: active`, spec review пройден.
+
+Агент выводит:
+```
+## STOP-gate: Design Ready → Plan Ready
+
+FT-XXX Design Ready. Spec review пройден, feature.md → active.
+Для планирования (grounding + eval suite + implementation-plan) начни новую сессию:
+`продолжи FT-XXX`
+(или: `продолжай` если хочешь в этой сессии)
+```
+
+**Почему:** Spec review потребляет значительный контекст (grounding кодовой базы, ревью субагентом, правки). Implementation plan требует нового grounding — свежий контекст эффективнее.
+
+### STOP-gate между Execution и Verification
 
 > После завершения всех STEP-* в Execution, если выполнено >5 шагов — агент **обязан** закоммить код и предложить продолжить verification в новой сессии. Это не опционально.
 
 ### Почему
 
-Verification фаза (/layers:review, /simplify, /eval:run) запускает 3+ параллельных субагентов, каждый из которых читает много файлов. Если основной контекст уже забит STEP-* выполнением — происходит auto-compaction, субагенты fail'ятся (rate limit после restore), результаты теряются.
+Verification фаза (/layers:review, /simplify, /eval:run) запускает 3+ параллельных субагентов, каждый из которых читает много файлы. Если основной контекст уже забит STEP-* выполнением — происходит auto-compaction, субагенты fail'ятся (rate limit после restore), результаты теряются.
 
 ### STOP-gate между Execution и Verification
 
