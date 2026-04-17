@@ -222,6 +222,18 @@ Decision predicates:
 - [ ] если deliverable нельзя принять без negative/edge coverage → ≥ 1 `NEG-*`
 - [ ] новые доменные или архитектурные термины добавлены в `memory-bank/glossary.md`
 
+### Design Ready → STOP-gate
+
+После перевода `feature.md` в `status: active` агент **обязан** предложить начать новую сессию для планирования:
+
+> FT-XXX Design Ready. Spec review пройден, `feature.md` → active.
+> Для планирования (grounding + eval suite + implementation-plan) начни новую сессию: `продолжи FT-XXX`.
+> (или: `продолжай` если хочешь в этой сессии)
+
+**Почему:** Spec review потребляет значительный контекст (grounding кодовой базы, ревью субагентом, правки). Создание implementation plan требует нового grounding — свежий контекст эффективнее.
+
+**Override:** Если пользователь явно запросил продолжение в текущей сессии (`продолжай`, `делай здесь`), STOP-gate снимается.
+
 ### Design Ready → Plan Ready
 
 - [ ] агент выполнил grounding: прошёлся по текущему состоянию системы (relevant paths, existing patterns, dependencies) и зафиксировал результат в discovery context секции `implementation-plan.md`
