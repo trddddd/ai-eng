@@ -47,5 +47,31 @@ RSpec.describe "word_mastery rake tasks" do # rubocop:disable RSpec/DescribeClas
       expect { Rake::Task["word_mastery:backfill"].invoke }
         .not_to change(UserLexemeState, :count)
     end
+
+    it "creates a LexemeReviewContribution per correct review log (FT-034)" do
+      user = create(:user)
+      sense = create(:sense)
+      family = create(:context_family)
+      occurrence = create(:sentence_occurrence, lexeme: sense.lexeme, sense: sense, context_family: family)
+      card = create(:card, user: user, sentence_occurrence: occurrence)
+      create(:review_log, card: card, correct: true, reviewed_at: 1.day.ago)
+
+      expect { Rake::Task["word_mastery:backfill"].invoke }
+        .to change(LexemeReviewContribution, :count).by(1)
+    end
+
+    it "does not duplicate LexemeReviewContribution on second run (FT-034)" do
+      user = create(:user)
+      sense = create(:sense)
+      occurrence = create(:sentence_occurrence, lexeme: sense.lexeme, sense: sense)
+      card = create(:card, user: user, sentence_occurrence: occurrence)
+      create(:review_log, card: card, correct: true, reviewed_at: 1.day.ago)
+
+      Rake::Task["word_mastery:backfill"].invoke
+      Rake::Task["word_mastery:backfill"].reenable
+
+      expect { Rake::Task["word_mastery:backfill"].invoke }
+        .not_to change(LexemeReviewContribution, :count)
+    end
   end
 end

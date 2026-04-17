@@ -18,14 +18,48 @@
       </div>
     </div>
 
-    <div class="bg-surface-container-low rounded-xl p-6 flex items-center justify-between">
-      <div>
-        <p class="font-label text-xs text-on-surface-variant mb-1 uppercase tracking-widest"><%= t("dashboard.words_learned_label") %></p>
-        <h3 class="font-headline text-2xl font-bold"><%= @progress.words_learned %></h3>
+    <div class="bg-surface-container-low rounded-xl p-6">
+      <div class="flex items-center justify-between mb-3">
+        <p class="font-label text-xs text-on-surface-variant uppercase tracking-widest">
+          <%= t("dashboard.word_progress_label") %>
+        </p>
+        <div class="w-10 h-10 bg-primary-fixed/30 rounded-lg flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-lg">menu_book</span>
+        </div>
       </div>
-      <div class="w-12 h-12 bg-primary-fixed/30 rounded-lg flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary">menu_book</span>
-      </div>
+
+      <% if @progress.total_words_tracked.zero? %>
+        <p class="font-body text-sm text-on-surface-variant mb-2">
+          <%= t("dashboard.word_progress_empty") %>
+        </p>
+        <%= link_to t("dashboard.word_progress_review_cta"), review_path,
+              class: "font-label text-sm font-semibold text-primary hover:underline" %>
+      <% elsif @progress.words_zero_coverage == @progress.total_words_tracked %>
+        <p class="font-body text-sm text-on-surface-variant mb-2">
+          <%= t("dashboard.word_progress_encourage", count: @progress.total_words_tracked) %>
+        </p>
+      <% else %>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <h3 class="font-headline text-2xl font-bold"><%= @progress.words_zero_coverage %></h3>
+            <p class="font-label text-xs text-on-surface-variant mt-0.5">
+              <%= t("dashboard.word_progress_zero_label") %>
+            </p>
+          </div>
+          <div>
+            <h3 class="font-headline text-2xl font-bold text-primary"><%= @progress.words_partial_coverage %></h3>
+            <p class="font-label text-xs text-on-surface-variant mt-0.5">
+              <%= t("dashboard.word_progress_partial_label") %>
+            </p>
+          </div>
+          <div>
+            <h3 class="font-headline text-2xl font-bold text-tertiary"><%= @progress.words_full_coverage %></h3>
+            <p class="font-label text-xs text-on-surface-variant mt-0.5">
+              <%= t("dashboard.word_progress_full_label") %>
+            </p>
+          </div>
+        </div>
+      <% end %>
     </div>
 
     <% daily_pct = (@progress.daily_reviews.to_f / @progress.daily_goal).clamp(0, 1) %>

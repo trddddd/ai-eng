@@ -8,7 +8,7 @@ RSpec.describe ContentBootstrap::AssignFallbackSenses, type: :operation do
       create(:lexeme, headword:, pos:, language:)
     end
 
-    context "with lexemes that have no senses" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+    context "with lexemes that have no senses" do
       let!(:noun_lexeme) { create_lexeme("thing", "noun") }
       let!(:verb_lexeme) { create_lexeme("do", "verb") }
       let!(:adj_lexeme) { create_lexeme("fast", "adjective") }

@@ -36,8 +36,16 @@ en:
     streak_value:
       one: "1 Day"
       other: "%{count} Days"
-    words_learned_label: "Words Learned"
     daily_goal_label: "Daily Goal"
+    word_progress_label: "Word Progress"
+    word_progress_zero_label: "New"
+    word_progress_partial_label: "Partial"
+    word_progress_full_label: "Full"
+    word_progress_empty: "Start reviewing to see your word progress."
+    word_progress_review_cta: "Begin review"
+    word_progress_encourage:
+      one: "%{count} new word — let's learn it!"
+      other: "%{count} new words — let's learn them!"
 
   reviews:
     title: "Review"

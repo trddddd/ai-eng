@@ -107,4 +107,97 @@ RSpec.describe WordMastery::RecordCoverage, type: :operation do
         .not_to change(UserContextFamilyCoverage, :count) # already created in first call
     end
   end
+
+  describe "contribution creation (FT-034)" do
+    let(:sense) { create(:sense, lexeme: lexeme) }
+    let(:family) { create(:context_family) }
+    let(:occurrence) { create(:sentence_occurrence, lexeme: lexeme, sense: sense, context_family: family) }
+    let(:card) { create(:card, user: user, sentence_occurrence: occurrence) }
+    let(:review_log) { create(:review_log, card: card, correct: true) }
+
+    it "creates a LexemeReviewContribution on correct answer" do
+      expect { described_class.call(review_log: review_log) }
+        .to change(LexemeReviewContribution, :count).by(1)
+    end
+
+    it "does not create a contribution for incorrect answer" do
+      wrong_log = create(:review_log, card: card, correct: false)
+      expect { described_class.call(review_log: wrong_log) }
+        .not_to change(LexemeReviewContribution, :count)
+    end
+
+    it "is idempotent — second call does not create a duplicate contribution" do
+      described_class.call(review_log: review_log)
+      expect { described_class.call(review_log: review_log) }
+        .not_to change(LexemeReviewContribution, :count)
+    end
+
+    describe "contribution_type (ASM-03 truth table)" do
+      it "is new_sense_and_family when both dimensions are new" do
+        described_class.call(review_log: review_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.contribution_type).to eq("new_sense_and_family")
+      end
+
+      it "is new_sense when only sense is new (family already covered)" do
+        # seed family coverage for a different sense/occurrence
+        other_sense = create(:sense, lexeme: lexeme)
+        other_occ = create(:sentence_occurrence, lexeme: lexeme, sense: other_sense, context_family: family)
+        other_card = create(:card, user: user, sentence_occurrence: other_occ)
+        described_class.call(review_log: create(:review_log, card: other_card, correct: true))
+        # now answer new sense with same family
+        described_class.call(review_log: review_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.contribution_type).to eq("new_sense")
+      end
+
+      it "is new_family when only family is new (sense already covered)" do
+        other_family = create(:context_family)
+        other_occ = create(:sentence_occurrence, lexeme: lexeme, sense: sense, context_family: other_family)
+        other_card = create(:card, user: user, sentence_occurrence: other_occ)
+        described_class.call(review_log: create(:review_log, card: other_card, correct: true))
+        described_class.call(review_log: review_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.contribution_type).to eq("new_family")
+      end
+
+      it "is reinforcement when both sense and family are already covered" do
+        described_class.call(review_log: review_log)
+        reinforcement_log = create(:review_log, card: card, correct: true)
+        described_class.call(review_log: reinforcement_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: reinforcement_log.id)
+        expect(contribution.contribution_type).to eq("reinforcement")
+      end
+    end
+
+    describe "NULL dimension edge cases (NEG-02)" do
+      it "treats NULL sense as already-covered and records new_family when family is new" do
+        occurrence.update_column(:sense_id, nil)
+        described_class.call(review_log: review_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.sense_id).to be_nil
+        expect(contribution.contribution_type).to eq("new_family")
+        expect(UserSenseCoverage.count).to eq(0)
+      end
+
+      it "treats NULL family as already-covered and records new_sense when sense is new" do
+        occurrence.update_column(:context_family_id, nil)
+        described_class.call(review_log: review_log)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.context_family_id).to be_nil
+        expect(contribution.contribution_type).to eq("new_sense")
+        expect(UserContextFamilyCoverage.count).to eq(0)
+      end
+    end
+
+    describe "single-sense full coverage (NEG-01)" do
+      it "produces 100% sense coverage with new_sense_and_family contribution" do
+        described_class.call(review_log: review_log)
+        state = UserLexemeState.find_by!(user: user, lexeme: lexeme)
+        expect(state.sense_coverage_pct).to eq(100.0)
+        contribution = LexemeReviewContribution.find_by!(review_log_id: review_log.id)
+        expect(contribution.contribution_type).to eq("new_sense_and_family")
+      end
+    end
+  end
 end
