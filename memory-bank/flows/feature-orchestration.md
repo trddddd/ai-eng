@@ -78,7 +78,11 @@ audience: humans_and_agents
  - attempt-1/meta.yaml + start.md созданы
  - feature.md: delivery_status→in_progress
  - код по STEP-* из implementation-plan.md
- - каждый CHK-* → EVID-* собирается по ходу
+ - каждый CHK-* → EVID-* собирается по ходу:
+   ⚠️ output команды проверки (`bundle exec rspec ...`) сохранять в файл
+   по evidence path из implementation-plan.md (например:
+   `bundle exec rspec ... > artifacts/ft-XXX/verify/chk-01/output.log 2>&1`)
+   Без файла-артефакта evidence считается несобранным.
  - делегировать Read-тяжёлые STEP-* субагентам
        │
        │  (возможны разрывы контекста → resume protocol)

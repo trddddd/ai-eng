@@ -132,6 +132,13 @@ must_not_define:
 
 Зафиксируй ожидаемые evidence **до написания кода**. Агент обязан заполнить эту таблицу перед первым `STEP-*` с write-action.
 
+**Правило сохранения:** при выполнении CHK-* агент **обязан** сохранить output в файл по Expected path. Без файла evidence считается несобранным. Шаблон:
+
+```bash
+mkdir -p artifacts/ft-xxx/verify/chk-01
+bundle exec rspec <spec> --format documentation > artifacts/ft-xxx/verify/chk-01/output.log 2>&1
+```
+
 | Evidence ID | Canonical ref | Expected artifact | Expected path | Produced by step |
 | --- | --- | --- | --- | --- |
 | `EVID-01` | `CHK-01`, `SC-01` | Что именно должно появиться (log, screenshot, count) | `artifacts/ft-xxx/chk-01/` | `STEP-01` |
