@@ -2,6 +2,11 @@ module Reviews
   class BuildSession
     BATCH_SIZE = 10
 
+    PRELOAD_TREE = { sentence_occurrence: [
+      { sentence: :sentence_translations },
+      { lexeme: :lexeme_glosses }
+    ] }.freeze
+
     def self.call(...) = new(...).call
 
     def initialize(user:, limit: BATCH_SIZE, now: Time.current)
@@ -27,17 +32,14 @@ module Reviews
       Card.due_for_review(@user, now: @now)
           .order(due: :asc)
           .limit(@limit)
-          .includes(sentence_occurrence: [
-                      { sentence: :sentence_translations },
-                      { lexeme: :lexeme_glosses }
-                    ])
+          .includes(PRELOAD_TREE)
           .to_a
     end
 
     def fill_word_debt(remaining)
       candidates = UserLexemeState
                    .where(user: @user)
-                   .where("family_coverage_pct < 100.0")
+                   .where(family_coverage_pct: ...FULL_COVERAGE)
                    .order(family_coverage_pct: :asc, last_covered_at: :asc)
 
       cards = []
@@ -52,9 +54,16 @@ module Reviews
       cards
     end
 
+    FULL_COVERAGE = 100.0
+    private_constant :FULL_COVERAGE
+
     def create_word_debt_card(uls)
-      occurrence = find_uncovered_family_occurrence(uls) ||
-                   find_uncovered_sense_occurrence(uls)
+      excluded_ids = existing_occurrence_ids_for(uls.lexeme)
+
+      occurrence = find_uncovered_occurrence(uls, column: :context_family_id, excluded_ids: excluded_ids,
+                                                  covered_ids: covered_family_ids_for(uls)) ||
+                   find_uncovered_occurrence(uls, column: :sense_id, excluded_ids: excluded_ids,
+                                                  covered_ids: covered_sense_ids_for(uls))
       return unless occurrence
 
       Card.create!(
@@ -67,40 +76,27 @@ module Reviews
       nil
     end
 
-    def find_uncovered_family_occurrence(uls)
-      covered_family_ids = UserContextFamilyCoverage
-                           .where(user: @user, lexeme: uls.lexeme)
-                           .pluck(:context_family_id)
-
-      excluded_ids = existing_occurrence_ids_for(uls.lexeme)
-
-      scope = SentenceOccurrence
-              .where(lexeme: uls.lexeme)
-              .where.not(context_family_id: nil)
-
-      scope = scope.where.not(context_family_id: covered_family_ids) if covered_family_ids.any?
-      scope = scope.where.not(id: excluded_ids) if excluded_ids.any?
-
-      scope.first
+    def find_uncovered_occurrence(uls, column:, covered_ids:, excluded_ids:)
+      SentenceOccurrence
+        .where(lexeme: uls.lexeme)
+        .where.not(column => nil)
+        .where.not(column => covered_ids)
+        .where.not(id: excluded_ids)
+        .first
     end
 
-    def find_uncovered_sense_occurrence(uls)
-      covered_sense_ids = UserSenseCoverage
-                          .joins(:sense)
-                          .merge(Sense.where(lexeme: uls.lexeme))
-                          .where(user: @user)
-                          .pluck(:sense_id)
+    def covered_family_ids_for(uls)
+      UserContextFamilyCoverage
+        .where(user: @user, lexeme: uls.lexeme)
+        .pluck(:context_family_id)
+    end
 
-      excluded_ids = existing_occurrence_ids_for(uls.lexeme)
-
-      scope = SentenceOccurrence
-              .where(lexeme: uls.lexeme)
-              .where.not(sense_id: nil)
-
-      scope = scope.where.not(sense_id: covered_sense_ids) if covered_sense_ids.any?
-      scope = scope.where.not(id: excluded_ids) if excluded_ids.any?
-
-      scope.first
+    def covered_sense_ids_for(uls)
+      UserSenseCoverage
+        .joins(:sense)
+        .merge(Sense.where(lexeme: uls.lexeme))
+        .where(user: @user)
+        .pluck(:sense_id)
     end
 
     def existing_occurrence_ids_for(lexeme)
@@ -113,10 +109,7 @@ module Reviews
     def preload_associations(cards)
       ActiveRecord::Associations::Preloader.new(
         records: cards,
-        associations: { sentence_occurrence: [
-          { sentence: :sentence_translations },
-          { lexeme: :lexeme_glosses }
-        ] }
+        associations: PRELOAD_TREE
       ).call
     end
   end
