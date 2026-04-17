@@ -148,6 +148,14 @@ DAG зависимостей между документами через `deriv
 
 Запись факта, что пользователь хотя бы один раз ответил правильно на карточку, использующую конкретную `ContextFamily` для данной лексемы. Хранит `user_id`, `lexeme_id`, `context_family_id`, `first_correct_at`. Unique по `(user_id, lexeme_id, context_family_id)`. Tracking на уровне `Lexeme`, не `Sense`: context family описывает домен употребления слова независимо от значения.
 
+### LexemeReviewContribution
+
+Связь между ReviewLog и вкладом в word mastery. Фиксирует, какой вклад (contribution_type) внёс конкретный правильный ответ в покрытие слова: `new_sense` (новое значение), `new_family` (новая контекстная семья), `new_sense_and_family` (оба новые), `reinforcement` (повторное подкрепление). Unique по `review_log_id`. Создаётся в FT-034.
+
+### Contribution Type
+
+Классификация вклада правильного ответа в word mastery. Определяется ДО upsert coverage-записей по таблице истинности (ASM-03): зависит от того, существовали ли `UserSenseCoverage` и `UserContextFamilyCoverage` до данного ответа. Значения: `new_sense`, `new_family`, `new_sense_and_family`, `reinforcement`. Введён в FT-034.
+
 ### WSD (Word Sense Disambiguation)
 
 Автоматическое определение, какой именно sense (synset) слова имеется в виду в конкретном предложении. Для Lingvize: привязка SentenceOccurrence к конкретному Sense. MVP подход: Most Frequent Sense (MFS) + POS filter (~70-75% accuracy).

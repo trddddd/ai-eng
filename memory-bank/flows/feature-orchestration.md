@@ -73,17 +73,20 @@ audience: humans_and_agents
  - feature.md: delivery_status→in_progress
  - код по STEP-* из implementation-plan.md
  - каждый CHK-* → EVID-* собирается по ходу
+ - делегировать Read-тяжёлые STEP-* субагентам
        │
        │  (возможны разрывы контекста → resume protocol)
        │
-       │  GATE: все CHK-* pass, /eval:run → accept
+       │  GATE: все CHK-* pass, rspec + rubocop зелёные
+       │
+       │  STOP-gate: закоммить код → предложить новую
+       │  сессию для verification (если >5 STEP-* выполнено)
        ▼
- ФАЗА 5: DONE PREP
- Та же или новая сессия
+ ФАЗА 5: VERIFICATION (новая сессия при >5 STEP-*)
  - /layers:review
- - /simplify
- - attempt-1/end.md с decision: accept
- - rspec + rubocop зелёные
+ - /simplify (3 параллельных субагента)
+ - /eval:run → accept/revise
+ - attempt-1/end.md с decision
        │
        │  GATE: Execution → Done checklist
        ▼
@@ -156,7 +159,8 @@ audience: humans_and_agents
 |-------------------|--------------------------|------|----------------|
 | `planned` | отсутствует | Design Ready | Прочитать feature.md → выполнить Design Ready gates |
 | `planned` | присутствует | Plan Ready | Прочитать plan → проверить eval suite → EnterWorktree → создать attempt |
-| `in_progress` | присутствует | Execution | Прочитать plan → найти первый незакрытый STEP-* → войти в worktree |
+| `in_progress` | присутствует, все STEP-* `[x]` | Verification | Прочитать plan → войти в worktree → /layers:review → /simplify → /eval:run |
+| `in_progress` | присутствует, есть незакрытые STEP-* | Execution | Прочитать plan → найти первый незакрытый STEP-* → войти в worktree |
 | `done` | архивирован | Done | Сообщить пользователю, уточнить задачу |
 
 ### Шаг 3: Дочитать нужные файлы для текущей фазы
@@ -225,7 +229,7 @@ git worktree add -b feat/ft-XXX-attN ../lingvize-ft-XXX-attN
 
 **Переходы в одной сессии:** draft → active (Design Ready) → in_progress (Execution) → done
 
-**Риски:** перегрев контекста ближе к концу. Если контекст заканчивается после коммита кода — resume по STEP-*.
+**Риски:** перегрев контекста ближе к концу. Если >5 STEP-* — фича не «малая», split по STOP-gate.
 
 ---
 
@@ -370,6 +374,46 @@ git worktree add -b feat/ft-XXX-attN ../lingvize-ft-XXX-attN
 ```
 
 **Когда не использовать parallel:** при любом риске merge-конфликта, при зависимости WS друг от друга, при малом change surface (overhead не оправдан).
+
+---
+
+## Context Budget: STOP-gates для длинных сессий
+
+### Правило
+
+> После завершения всех STEP-* в Execution, если выполнено >5 шагов — агент **обязан** закоммить код и предложить продолжить verification в новой сессии. Это не опционально.
+
+### Почему
+
+Verification фаза (/layers:review, /simplify, /eval:run) запускает 3+ параллельных субагентов, каждый из которых читает много файлов. Если основной контекст уже забит STEP-* выполнением — происходит auto-compaction, субагенты fail'ятся (rate limit после restore), результаты теряются.
+
+### STOP-gate между Execution и Verification
+
+После: все STEP-* done, rspec green, rubocop clean, код закоммичен.
+
+Агент выводит:
+```
+## STOP-gate: Execution → Verification
+
+Код закоммичен на ветке feat/ft-XXX-attN.
+STEP-* выполнено: N шагов. Рекомендую verification в новой сессии.
+
+Напиши `продолжи FT-XXX` — агент подхватит с /layers:review.
+(или: `продолжай` если хочешь в этой сессии)
+```
+
+### Checkpoint внутри Execution
+
+Если >8 STEP-* в плане — после каждых 5 выполненных шагов агент:
+1. Коммитит текущий прогресс (wip: или полноценный)
+2. Обновляет implementation-plan.md
+3. Предлагает: «5 шагов выполнено, осталось N. Продолжить здесь или новая сессия?»
+
+### Правила снижения давления на контекст
+
+- **CHK-* проверки** — запускать одним субагентом-батчем, не 5 последовательных bash в главном контексте
+- **File reads для STEP-*** — делегировать субагентам если файл >100 строк и не нужен для следующего шага
+- **git diff** — читать один раз, сохранять в temp file, передавать субагентам путь к файлу
 
 ---
 
