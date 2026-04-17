@@ -82,5 +82,48 @@ RSpec.describe Reviews::RecordAnswer do
         nil
       end.not_to change(ReviewLog, :count)
     end
+
+    describe "word mastery integration (FT-034)" do
+      it "calls WordMastery::RecordCoverage on correct answer" do
+        allow(WordMastery::RecordCoverage).to receive(:call).and_call_original
+        described_class.call(card: card, correct: true, answer_text: card.form)
+        expect(WordMastery::RecordCoverage).to have_received(:call)
+          .with(hash_including(:review_log))
+      end
+
+      it "does not call WordMastery::RecordCoverage on incorrect answer" do
+        allow(WordMastery::RecordCoverage).to receive(:call)
+        described_class.call(card: card, correct: false, answer_text: "xyz")
+        expect(WordMastery::RecordCoverage).not_to have_received(:call)
+      end
+
+      it "updates UserLexemeState in the same transaction as ReviewLog" do
+        expect do
+          described_class.call(card: card, correct: true, answer_text: card.form)
+        end.to change(ReviewLog, :count).by(1)
+                                        .and change(UserLexemeState, :count).by(1)
+                                                                            .and change(LexemeReviewContribution, :count).by(1)
+      end
+
+      it "rolls back ReviewLog and contribution if RecordCoverage raises" do
+        allow(WordMastery::RecordCoverage).to receive(:call).and_raise(ActiveRecord::RecordInvalid)
+
+        expect do
+          described_class.call(card: card, correct: true, answer_text: card.form)
+        rescue StandardError
+          nil
+        end.not_to change(ReviewLog, :count)
+
+        expect(LexemeReviewContribution.count).to eq(0)
+      end
+
+      it "creates two ReviewLogs and two contributions when called twice" do
+        described_class.call(card: card, correct: true, answer_text: card.form)
+        expect do
+          described_class.call(card: card, correct: true, answer_text: card.form)
+        end.to change(ReviewLog, :count).by(1)
+                                        .and change(LexemeReviewContribution, :count).by(1)
+      end
+    end
   end
 end

@@ -1,0 +1,30 @@
+
+word_mastery rake tasks
+  word_mastery:backfill
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+    creates coverage records from correct review logs
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    is idempotent — does not duplicate on second run
+Backfilling word mastery state from 0 correct review logs...
+Done: 0 processed, 0 errors
+    skips incorrect review logs
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+    creates a LexemeReviewContribution per correct review log (FT-034)
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    does not duplicate LexemeReviewContribution on second run (FT-034)
+
+Finished in 0.51345 seconds (files took 0.68792 seconds to load)
+5 examples, 0 failures
+
+Coverage report generated for RSpec to /Users/xtrmdk/work/lingvize-ft-034-att1/coverage.
+Line Coverage: 16.97% (248 / 1461)
+Line coverage (16.97%) is below the expected minimum coverage (80.00%).
+SimpleCov failed with exit 2 due to a coverage related error

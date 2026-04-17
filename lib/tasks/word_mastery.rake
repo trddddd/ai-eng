@@ -9,7 +9,11 @@ namespace :word_mastery do
     puts "Backfilling word mastery state from #{total} correct review logs..."
 
     correct_logs.find_each do |review_log|
-      WordMastery::RecordCoverage.call(review_log: review_log, now: review_log.reviewed_at)
+      next if LexemeReviewContribution.exists?(review_log_id: review_log.id)
+
+      ActiveRecord::Base.transaction do
+        WordMastery::RecordCoverage.call(review_log: review_log, now: review_log.reviewed_at)
+      end
       processed += 1
       puts "  #{processed}/#{total} (#{(processed.to_f / total * 100).round(1)}%)" if (processed % 100).zero?
     rescue StandardError => e

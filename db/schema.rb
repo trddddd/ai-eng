@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_16_012523) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_16_194321) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,6 +59,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_16_012523) do
     t.index ["lexeme_id", "target_language_id", "gloss"], name: "index_lexeme_glosses_on_lexeme_target_lang_gloss", unique: true
     t.index ["lexeme_id"], name: "index_lexeme_glosses_on_lexeme_id"
     t.index ["target_language_id"], name: "index_lexeme_glosses_on_target_language_id"
+  end
+
+  create_table "lexeme_review_contributions", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
+    t.uuid "context_family_id"
+    t.string "contribution_type", null: false
+    t.datetime "created_at", null: false
+    t.uuid "lexeme_id", null: false
+    t.uuid "review_log_id", null: false
+    t.uuid "sense_id"
+    t.bigint "user_id", null: false
+    t.index ["review_log_id"], name: "index_lexeme_review_contributions_on_review_log_id", unique: true
+    t.index ["user_id", "contribution_type"], name: "idx_on_user_id_contribution_type_8da46b0be9"
+    t.index ["user_id", "lexeme_id"], name: "index_lexeme_review_contributions_on_user_id_and_lexeme_id"
+    t.index ["user_id"], name: "index_lexeme_review_contributions_on_user_id"
   end
 
   create_table "lexemes", id: :uuid, default: -> { "uuidv7()" }, force: :cascade do |t|
@@ -192,6 +206,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_16_012523) do
   add_foreign_key "cards", "users", on_delete: :cascade
   add_foreign_key "lexeme_glosses", "languages", column: "target_language_id"
   add_foreign_key "lexeme_glosses", "lexemes"
+  add_foreign_key "lexeme_review_contributions", "context_families", on_delete: :nullify
+  add_foreign_key "lexeme_review_contributions", "lexemes", on_delete: :cascade
+  add_foreign_key "lexeme_review_contributions", "review_logs", on_delete: :cascade
+  add_foreign_key "lexeme_review_contributions", "senses", on_delete: :nullify
+  add_foreign_key "lexeme_review_contributions", "users", on_delete: :cascade
   add_foreign_key "lexemes", "languages"
   add_foreign_key "review_logs", "cards", on_delete: :cascade
   add_foreign_key "senses", "lexemes", on_delete: :cascade

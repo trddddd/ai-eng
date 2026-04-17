@@ -37,8 +37,18 @@ ru:
       few: "%{count} дня"
       many: "%{count} дней"
       other: "%{count} дня"
-    words_learned_label: "Слов выучено"
     daily_goal_label: "Цель на сегодня"
+    word_progress_label: "Прогресс слов"
+    word_progress_zero_label: "Новых"
+    word_progress_partial_label: "Частично"
+    word_progress_full_label: "Освоено"
+    word_progress_empty: "Начните повторение, чтобы увидеть прогресс."
+    word_progress_review_cta: "Начать повторение"
+    word_progress_encourage:
+      one: "%{count} новое слово — давайте его выучим!"
+      few: "%{count} новых слова — давайте их выучим!"
+      many: "%{count} новых слов — давайте их выучим!"
+      other: "%{count} новых слов — давайте их выучим!"
 
   reviews:
     title: "Повторение"

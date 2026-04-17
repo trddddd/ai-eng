@@ -1,0 +1,33 @@
+
+Dashboard::BuildProgress
+  zero state
+    returns zeros when user has no data
+  #streak
+    returns 0 when user has never reviewed
+    returns 0 when last review was not today
+    returns 1 when reviewed only today
+    counts consecutive days including today
+    stops at the first gap
+    ignores reviews from other users
+  word progress buckets (FT-034)
+    counts states with sense_coverage_pct = 0 as zero bucket
+    counts states with 0 < sense_coverage_pct < 100 as partial bucket
+    counts states with sense_coverage_pct = 100 as full bucket
+    returns expected bucket distribution for mixed data
+    ignores states belonging to other users
+  #daily_reviews
+    counts unique cards reviewed today
+    counts each card once even with multiple reviews today
+    counts multiple distinct cards reviewed today
+    excludes reviews from previous days
+    ignores reviews from other users
+  #daily_goal
+    always returns the DAILY_GOAL constant
+
+Finished in 0.70078 seconds (files took 0.6846 seconds to load)
+18 examples, 0 failures
+
+Coverage report generated for RSpec to /Users/xtrmdk/work/lingvize-ft-034-att1/coverage.
+Line Coverage: 10.23% (144 / 1407)
+Line coverage (10.23%) is below the expected minimum coverage (80.00%).
+SimpleCov failed with exit 2 due to a coverage related error

@@ -1,0 +1,32 @@
+
+Reviews::RecordAnswer
+  .call
+    rolls back if schedule! fails
+    with correct answer on first attempt
+      creates a ReviewLog
+      sets correct and rating on the log
+      schedules the card
+    with near-miss (typo, one char off)
+      assigns Hard rating instead of Again
+    with wrong answer (completely different word)
+      assigns Again rating
+    with multiple attempts (retry)
+      correct=false on first attempt means no_recall regardless of attempts count
+    with backspace_count and attempts
+      saves backspace_count and attempts but does not affect rating
+    when called twice on the same card
+      creates two ReviewLogs
+    word mastery integration (FT-034)
+      calls WordMastery::RecordCoverage on correct answer
+      does not call WordMastery::RecordCoverage on incorrect answer
+      updates UserLexemeState in the same transaction as ReviewLog
+      rolls back ReviewLog and contribution if RecordCoverage raises
+      creates two ReviewLogs and two contributions when called twice
+
+Finished in 0.83249 seconds (files took 1 second to load)
+14 examples, 0 failures
+
+Coverage report generated for RSpec to /Users/xtrmdk/work/lingvize-ft-034-att1/coverage.
+Line Coverage: 18.13% (244 / 1346)
+Line coverage (18.12%) is below the expected minimum coverage (80.00%).
+SimpleCov failed with exit 2 due to a coverage related error

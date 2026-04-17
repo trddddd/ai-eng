@@ -1,5 +1,6 @@
 class ReviewLog < ApplicationRecord
   belongs_to :card
+  has_one :lexeme_review_contribution, dependent: :destroy
 
   RATING_AGAIN = 1
   RATING_HARD  = 2

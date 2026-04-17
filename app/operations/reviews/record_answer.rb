@@ -36,6 +36,7 @@ module Reviews
           reviewed_at: @now
         )
         @card.schedule!(rating: rating, now: @now)
+        WordMastery::RecordCoverage.call(review_log: review_log, now: @now) if @correct
         review_log
       end
     end

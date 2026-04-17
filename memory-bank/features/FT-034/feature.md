@@ -8,7 +8,7 @@ derived_from:
   - ../../prd/PRD-002-word-mastery.md
   - ../FT-031/feature.md
 status: active
-delivery_status: planned
+delivery_status: done
 audience: humans_and_agents
 must_not_define:
   - implementation_sequence

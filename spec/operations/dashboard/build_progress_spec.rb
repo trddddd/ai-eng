@@ -15,7 +15,15 @@ RSpec.describe Dashboard::BuildProgress do
   describe "zero state" do
     it "returns zeros when user has no data" do
       result = call
-      expect(result).to have_attributes(streak: 0, words_learned: 0, daily_reviews: 0, daily_goal: 50)
+      expect(result).to have_attributes(
+        streak: 0,
+        daily_reviews: 0,
+        daily_goal: 50,
+        words_zero_coverage: 0,
+        words_partial_coverage: 0,
+        words_full_coverage: 0,
+        total_words_tracked: 0
+      )
     end
   end
 
@@ -61,34 +69,51 @@ RSpec.describe Dashboard::BuildProgress do
     end
   end
 
-  describe "#words_learned" do
-    it "counts cards with state=REVIEW" do
-      create(:card, user: user, state: Card::STATE_REVIEW)
-      expect(call.words_learned).to eq(1)
+  describe "word progress buckets (FT-034)" do
+    it "counts states with sense_coverage_pct = 0 as zero bucket" do
+      create(:user_lexeme_state, user: user, sense_coverage_pct: 0.0)
+      create(:user_lexeme_state, user: user, sense_coverage_pct: 0.0)
+      result = call
+      expect(result.words_zero_coverage).to eq(2)
+      expect(result.words_partial_coverage).to eq(0)
+      expect(result.words_full_coverage).to eq(0)
+      expect(result.total_words_tracked).to eq(2)
     end
 
-    it "counts cards with mastered_at set" do
-      create(:card, user: user, state: Card::STATE_NEW, mastered_at: 1.day.ago)
-      expect(call.words_learned).to eq(1)
+    it "counts states with 0 < sense_coverage_pct < 100 as partial bucket" do
+      create(:user_lexeme_state, user: user, sense_coverage_pct: 25.0)
+      create(:user_lexeme_state, user: user, sense_coverage_pct: 75.5)
+      result = call
+      expect(result.words_partial_coverage).to eq(2)
+      expect(result.words_zero_coverage).to eq(0)
+      expect(result.words_full_coverage).to eq(0)
     end
 
-    it "counts both state=REVIEW and mastered_at cards without double-counting" do
-      create(:card, user: user, state: Card::STATE_REVIEW)
-      create(:card, user: user, state: Card::STATE_NEW, mastered_at: 1.day.ago)
-      expect(call.words_learned).to eq(2)
+    it "counts states with sense_coverage_pct = 100 as full bucket" do
+      create(:user_lexeme_state, user: user, sense_coverage_pct: 100.0)
+      result = call
+      expect(result.words_full_coverage).to eq(1)
+      expect(result.words_zero_coverage).to eq(0)
+      expect(result.words_partial_coverage).to eq(0)
     end
 
-    it "excludes cards in LEARNING or RELEARNING state" do
-      create(:card, user: user, state: Card::STATE_NEW)
-      create(:card, user: user, state: Card::STATE_LEARNING)
-      create(:card, user: user, state: Card::STATE_RELEARNING)
-      expect(call.words_learned).to eq(0)
+    it "returns expected bucket distribution for mixed data" do
+      3.times { create(:user_lexeme_state, user: user, sense_coverage_pct: 0.0) }
+      5.times { |i| create(:user_lexeme_state, user: user, sense_coverage_pct: 10.0 + i) }
+      2.times { create(:user_lexeme_state, user: user, sense_coverage_pct: 100.0) }
+
+      result = call
+      expect(result.words_zero_coverage).to eq(3)
+      expect(result.words_partial_coverage).to eq(5)
+      expect(result.words_full_coverage).to eq(2)
+      expect(result.total_words_tracked).to eq(10)
     end
 
-    it "ignores cards from other users" do
+    it "ignores states belonging to other users" do
       other_user = create(:user)
-      create(:card, user: other_user, state: Card::STATE_REVIEW)
-      expect(call.words_learned).to eq(0)
+      create(:user_lexeme_state, user: other_user, sense_coverage_pct: 100.0)
+      result = call
+      expect(result.total_words_tracked).to eq(0)
     end
   end
 

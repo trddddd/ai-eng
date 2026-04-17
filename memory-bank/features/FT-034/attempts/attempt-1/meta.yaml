@@ -1,0 +1,37 @@
+---
+attempt_id: attempt-1
+agent: builder
+model: opus-4.6
+branch: feat/ft-034-att1
+worktree_path: ../lingvize-ft-034-att1
+base_branch: main
+started_at: 2026-04-16T00:00:00Z
+
+previous_attempts: []
+
+context_snapshot:
+  feature_status: active
+  feature_delivery_status: in_progress
+  unresolved_questions: []
+
+orchestration:
+  pattern: sequential
+  rationale: "Schema + transaction-boundary изменения несут data-integrity риск; coordination overhead параллельных worktrees выше выгоды. PAR-01 (WS-3 parallelism) зафиксирован как candidate, но не выбран."
+  parallel_worktrees: []
+  delegated_steps: []
+  merge_strategy: null
+
+human_control_points:
+  - id: HC-01
+    trigger: "before db:migrate for new lexeme_review_contributions table"
+    status: pending
+  - id: HC-02
+    trigger: "only if deviating from CON-05 transaction boundary"
+    status: skipped
+
+planned_checks:
+  - CHK-01
+  - CHK-02
+  - CHK-03
+  - CHK-04
+  - CHK-05
