@@ -1,0 +1,35 @@
+
+WordMastery::RecordCoverage
+  .call with correct answer
+    creates coverage records
+    updates state with correct counters and percentages
+  .call with incorrect answer
+    does not create any records
+  idempotency
+    does not duplicate coverage on repeated call
+  multiple senses coverage
+    tracks coverage across different senses
+  NULL sense edge case (FM-01)
+    creates state and family coverage but skips sense coverage
+  contribution creation (FT-034)
+    creates a LexemeReviewContribution on correct answer
+    does not create a contribution for incorrect answer
+    is idempotent — second call does not create a duplicate contribution
+    contribution_type (ASM-03 truth table)
+      is new_sense_and_family when both dimensions are new
+      is new_sense when only sense is new (family already covered)
+      is new_family when only family is new (sense already covered)
+      is reinforcement when both sense and family are already covered
+    NULL dimension edge cases (NEG-02)
+      treats NULL sense as already-covered and records new_family when family is new
+      treats NULL family as already-covered and records new_sense when sense is new
+    single-sense full coverage (NEG-01)
+      produces 100% sense coverage with new_sense_and_family contribution
+
+Finished in 1.1 seconds (files took 0.73097 seconds to load)
+16 examples, 0 failures
+
+Coverage report generated for RSpec to /Users/xtrmdk/work/lingvize-ft-034-att1/coverage.
+Line Coverage: 14.66% (200 / 1364)
+Line coverage (14.66%) is below the expected minimum coverage (80.00%).
+SimpleCov failed with exit 2 due to a coverage related error

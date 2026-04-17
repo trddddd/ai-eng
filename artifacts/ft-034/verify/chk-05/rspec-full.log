@@ -1,0 +1,643 @@
+NOTE: Gem::Specification#datadir is deprecated with no replacement. It will be removed in Rubygems 4.1
+Gem::Specification#datadir called from /Users/xtrmdk/.local/share/mise/installs/ruby/4.0.2/lib/ruby/gems/4.0.0/gems/bundler-4.0.5/lib/bundler/remote_specification.rb:118.
+NOTE: Gem::Specification#datadir is deprecated with no replacement. It will be removed in Rubygems 4.1
+Gem::Specification#datadir called from /Users/xtrmdk/.local/share/mise/installs/ruby/4.0.2/lib/ruby/gems/4.0.0/gems/bundler-4.0.5/lib/bundler/remote_specification.rb:118.
+
+Card
+  validations
+    is expected to be valid
+    requires due
+    requires user
+    requires sentence_occurrence
+    rejects invalid state
+    accepts all valid states
+    enforces uniqueness of sentence_occurrence per user
+  #to_fsrs_card
+    returns an Fsrs::Card with matching attributes
+  .due_for_review
+    returns cards with due <= now
+    excludes cards with due in the future
+    excludes mastered cards
+    excludes cards from other users
+  #schedule!
+    updates FSRS fields after scheduling
+  #master!
+    sets mastered_at
+  #mastered?
+    returns false when mastered_at is nil
+    returns true when mastered_at is set
+  #apply_fsrs_card!
+    persists FSRS state from an Fsrs::Card
+
+ContextFamily
+  has a valid factory
+  requires a name
+  requires a unique name
+
+Language
+  validations
+    is expected to be valid
+    requires code
+    requires name
+    requires unique code
+
+LexemeGloss
+  validations
+    is expected to be valid
+    requires gloss
+    requires lexeme
+    requires target_language
+    requires unique gloss per lexeme and target_language
+
+Lexeme
+  validations
+    is expected to be valid
+    requires headword
+    requires language
+    requires unique headword within language
+
+ReviewLog
+  validations
+    is expected to be valid
+    rejects invalid rating
+    rejects invalid recall_quality
+    requires correct to be boolean
+    requires reviewed_at
+    requires attempts > 0
+    rejects answer_accuracy outside 0..1
+    allows nil answer_accuracy
+  .compute_accuracy
+    returns 1.0 for exact match
+    returns 0.0 for blank answer
+    returns 0.0 for nil answer
+    computes near-miss accuracy for typo (runnig)
+    computes low accuracy for completely different word (ran vs running)
+    is case-insensitive
+  .classify_recall
+    when incorrect
+      returns no_recall for accuracy < 0.7
+      returns near_miss for accuracy >= 0.7
+      returns no_recall when accuracy is nil
+    when correct
+      returns automatic_recall for fast response
+      returns successful_recall for normal response
+      returns effortful_recall for slow response
+      returns successful_recall when elapsed_ms is nil
+  .compute_rating
+    maps no_recall to Again (1)
+    maps near_miss to Hard (2)
+    maps effortful_recall to Hard (2)
+    maps successful_recall to Good (3)
+    maps automatic_recall to Easy (4)
+
+Sense
+  has a valid factory
+  requires a definition
+  requires a pos
+  requires a source
+  belongs to a lexeme
+  defaults source to 'wordnet'
+  defaults sense_rank to 1
+  defaults examples to empty array
+
+SentenceOccurrence
+  validations
+    is expected to be valid
+    requires form
+    requires sentence
+    requires lexeme
+    requires unique (sentence_id, lexeme_id)
+  #cloze_text
+    replaces the first occurrence of form with ____
+    replaces only the first occurrence when form appears multiple times
+
+Sentence
+  validations
+    is expected to be valid
+    requires text
+    requires source
+    requires language
+    requires unique text within language
+    rejects text containing ____
+    accepts text without ____
+
+SentenceTranslation
+  validations
+    is expected to be valid
+    requires text
+    requires sentence
+    requires target_language
+    requires unique (sentence_id, target_language_id)
+
+UserContextFamilyCoverage
+  has a valid factory
+  validations
+    requires unique user_id scoped to lexeme_id and context_family_id
+    allows same user and lexeme with different context_families
+    requires first_correct_at
+  associations
+    belongs to user
+    belongs to lexeme
+    belongs to context_family
+
+UserLexemeState
+  has a valid factory
+  validations
+    requires unique user_id scoped to lexeme_id
+    allows same user with different lexemes
+    rejects negative covered_sense_count
+    rejects negative total_sense_count
+    rejects sense_coverage_pct outside 0..100
+    accepts sense_coverage_pct boundary values
+    rejects negative covered_family_count
+    rejects family_coverage_pct outside 0..100
+  associations
+    belongs to user
+    belongs to lexeme
+    has many user_sense_coverages
+    has many user_context_family_coverages
+  defaults
+    defaults counters to zero
+    defaults percentages to zero
+    defaults last_covered_at to nil
+
+UserSenseCoverage
+  has a valid factory
+  validations
+    requires unique user_id scoped to sense_id
+    allows same user with different senses
+    requires first_correct_at
+  associations
+    belongs to user
+    belongs to sense
+
+User
+  validations
+    is expected to be valid
+    requires email
+    validates email format
+    requires unique email (case-insensitive)
+    requires password on create
+    requires minimum password length of 8 characters
+  #authenticate
+    returns user with correct password
+    returns false with wrong password
+  email normalization
+    downcases email before save
+
+Cards::BuildStarterDeck
+  .call
+    with A1 lexemes having Russian translations
+      creates cards for the user
+      sets due to current time
+      sets state to NEW
+      sets FSRS fields to defaults
+      creates at most 50 cards
+      creates one card per lexeme
+    with no A1 lexemes
+      creates no cards
+    with A1 lexemes but no Russian translations
+      creates no cards
+    when called twice for the same user
+      does not create duplicate cards
+
+ContentBootstrap::AssignContextFamilies
+  .call
+    with occurrences that have senses with lexical_domain
+      assigns correct context family based on lexical domain
+    when selecting sense by MFS baseline (lowest sense_rank)
+      assigns context family from MFS sense (lowest sense_rank)
+      also sets sense_id on the occurrence
+    with occurrences that have no sense (lexeme has no senses)
+      skips occurrences whose lexeme has no senses at all
+    with sense that has nil lexical_domain (fallback senses)
+      assigns 'unknown' context family for nil lexical_domain
+    with unmapped lexical_domain (adj.all, adv.all)
+      assigns 'unknown' context family for unmapped lexical domain
+    when run multiple times
+      does not reassign on second run
+    with multiple occurrences across domains
+      assigns correct families for all occurrences
+    when logging assignment counts
+      logs summary with assignment counts
+
+ContentBootstrap::AssignFallbackSenses
+  .call
+    with lexemes that have no senses
+      creates fallback senses for all lexemes without senses
+      creates fallback sense with correct definition for noun
+      creates fallback sense with correct definition for verb
+      creates fallback sense with correct definition for adjective
+      creates fallback sense with correct definition for adverb
+      creates fallback sense for lexeme with nil POS
+    with lexemes that already have senses
+      skips lexemes with existing senses
+      does not create duplicate senses
+    when run multiple times
+      does not create duplicate fallback senses on second run
+    with mixed lexemes (some with senses, some without)
+      only creates fallback senses for lexemes without senses
+    when logging
+      logs summary with fallback count
+
+ContentBootstrap::ImportNgslCoreLexemes
+  with fixture file
+    imports valid lexemes skipping comment lines
+    stores nil pos and cefr_level
+    is idempotent
+  when file does not exist
+    raises with the file name
+
+ContentBootstrap::ImportNgslSpokenLexemes
+  with fixture file
+    imports valid lexemes
+    skips blank headword with a warning
+    is idempotent
+  when file does not exist
+    raises with the file name
+
+ContentBootstrap::ImportOxfordLexemes
+  with fixture file
+    imports valid lexemes with pos and cefr_level
+    skips blank headword with a warning
+    is idempotent — second run does not duplicate records
+  when file does not exist
+    raises with the file name
+
+ContentBootstrap::ImportPoliglotGlosses
+  with fixture file
+    creates glosses for matched lexemes
+    creates multiple glosses for word with multiple meanings
+    does not fail when lexeme has no match in poliglot
+    is idempotent
+  when file does not exist
+    raises with the file name
+  when JSON has no 'data' key
+    raises with a descriptive message
+
+ContentBootstrap::ImportSenses
+  .call
+    with lexemes that have WordNet matches
+      creates senses from WordNet synsets
+      associates senses with correct lexeme
+      sets sense_rank for ordering (1 = most frequent)
+      stores definition from WordNet
+      maps WordNet POS to string format
+    with various POS types
+      handles Oxford POS to WordNet POS mapping
+      completes without error for determiners mapped to adjective
+      logs warning for lexemes with POS that maps to nil (function words)
+    with lexemes that have nil POS
+      performs lookup without POS filter
+    when run multiple times
+      does not duplicate senses on second run
+    with lexemes that have no WordNet match
+      logs warning and skips lexeme
+    with lexical_domain stored
+      stores lexical domain from WordNet synset
+    with examples stored
+      stores examples array from WordNet
+    when logging
+      logs summary with matched and skipped counts
+      logs warning if >20% of lexemes are skipped
+
+Dashboard::BuildProgress
+  zero state
+    returns zeros when user has no data
+  #streak
+    returns 0 when user has never reviewed
+    returns 0 when last review was not today
+    returns 1 when reviewed only today
+    counts consecutive days including today
+    stops at the first gap
+    ignores reviews from other users
+  word progress buckets (FT-034)
+    counts states with sense_coverage_pct = 0 as zero bucket
+    counts states with 0 < sense_coverage_pct < 100 as partial bucket
+    counts states with sense_coverage_pct = 100 as full bucket
+    returns expected bucket distribution for mixed data
+    ignores states belonging to other users
+  #daily_reviews
+    counts unique cards reviewed today
+    counts each card once even with multiple reviews today
+    counts multiple distinct cards reviewed today
+    excludes reviews from previous days
+    ignores reviews from other users
+  #daily_goal
+    always returns the DAILY_GOAL constant
+
+Reviews::BuildSession
+  .call
+    returns due cards sorted by due ASC
+    excludes future cards
+    excludes mastered cards
+    limits to BATCH_SIZE
+    returns empty when no due cards
+
+Reviews::RecordAnswer
+  .call
+    rolls back if schedule! fails
+    with correct answer on first attempt
+      creates a ReviewLog
+      sets correct and rating on the log
+      schedules the card
+    with near-miss (typo, one char off)
+      assigns Hard rating instead of Again
+    with wrong answer (completely different word)
+      assigns Again rating
+    with multiple attempts (retry)
+      correct=false on first attempt means no_recall regardless of attempts count
+    with backspace_count and attempts
+      saves backspace_count and attempts but does not affect rating
+    when called twice on the same card
+      creates two ReviewLogs
+    word mastery integration (FT-034)
+      calls WordMastery::RecordCoverage on correct answer
+      does not call WordMastery::RecordCoverage on incorrect answer
+      updates UserLexemeState in the same transaction as ReviewLog
+      rolls back ReviewLog and contribution if RecordCoverage raises
+      creates two ReviewLogs and two contributions when called twice
+
+Sentences::ImportQuizword
+  with fixture page and matching lexemes
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+    imports 2 sentences
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+    imports 2 sentence translations
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+    imports 2 sentence occurrences
+    skips the blank row
+    prints progress while importing
+  when a sentence has no matching lexeme
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 2
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 2
+    skips sentences without a matching lexeme
+    increments skipped rows for no-match sentences
+  when multiple lexemes match the same sentence
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+    selects the longest matching headword
+  when tie-break rules apply
+    when headwords have equal length, earliest index wins
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+      selects the lexeme with the earliest position in the sentence
+    when headwords have equal length and equal index, lexicographic order wins
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+      selects the lexicographically smallest headword
+    when headwords and positions are identical, smaller lexeme id wins
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+      selects the lexeme with the smaller id
+  when the same fixture is imported twice
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 0. Failed URLs: 0. Skipped rows: 1
+    does not change sentence count on second run
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 0. Failed URLs: 0. Skipped rows: 1
+    does not change translation count on second run
+Progress: 1/1 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 0. Failed URLs: 0. Skipped rows: 1
+    does not change occurrence count on second run
+  when END_PAGE is not set
+Progress: 1/2 pages. Current page: 1. Imported: 2. Failed URLs: 0. Skipped rows: 1
+Progress: 2/2 pages. Current page: 2. Imported: 2. Failed URLs: 0. Skipped rows: 2
+Quizword done. Imported: 2. Failed URLs: 0. Skipped rows: 2
+    discovers the last non-empty page and imports through it
+  when HTTP returns 429
+    adds the URL to failed_urls in the summary
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 1. Skipped rows: 0
+Quizword done. Imported: 0. Failed URLs: 1. Skipped rows: 0
+    exits with code 0
+  when HTTP raises Net::ReadTimeout on every attempt
+    retries and adds the URL to failed_urls
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 1. Skipped rows: 0
+Quizword done. Imported: 0. Failed URLs: 1. Skipped rows: 0
+    calls get_response 4 times (1 initial + 3 retries)
+  when lexemes table is empty
+No lexemes in DB. Run content_bootstrap:import_all first
+    aborts with a message about missing lexemes
+No lexemes in DB. Run content_bootstrap:import_all first
+    does not create any records
+  when a lexeme appears as a substring inside another word
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 0. Failed URLs: 0. Skipped rows: 1
+    does not create a sentence occurrence
+    increments skipped rows
+  when lexeme 'ago' appears inside 'agony'
+Progress: 1/1 pages. Current page: 1. Imported: 0. Failed URLs: 0. Skipped rows: 1
+Quizword done. Imported: 0. Failed URLs: 0. Skipped rows: 1
+    does not create a sentence occurrence
+    increments skipped rows
+  when the same lexeme appears as a whole word
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+    creates a sentence occurrence with the correct lexeme
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+    extracts the form preserving original case
+  when headword contains regex special characters
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+    matches the lexeme correctly
+Progress: 1/1 pages. Current page: 1. Imported: 1. Failed URLs: 0. Skipped rows: 0
+Quizword done. Imported: 1. Failed URLs: 0. Skipped rows: 0
+    preserves original case in form
+  when START_PAGE > END_PAGE
+Invalid page range or concurrency
+    aborts with an invalid page range message
+Invalid page range or concurrency
+    does not create any records
+
+Sentences::ImportTatoeba
+  .call
+    with valid Tatoeba data files
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      imports only English sentences that have Russian translations
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      sets source to 'tatoeba'
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      stores tatoeba_id for imported sentences
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      skips English sentences without Russian translations
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      imports Russian translations for linked English sentences
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      creates sentence occurrences for matched lexemes
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      sets correct form on occurrence
+ImportTatoeba done: 2 English sentences with Russian translations processed
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      is idempotent - does not duplicate sentences on second run
+ImportTatoeba done: 2 English sentences with Russian translations processed
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      is idempotent - does not duplicate occurrences on second run
+    without existing lexemes
+No lexemes in DB. Run content_bootstrap:import_all first
+      raises an error
+    when Tatoeba files do not exist
+[ImportTatoeba] SKIP: Tatoeba data files not found in /Users/xtrmdk/work/lingvize-ft-034-att1/db/data/tatoeba. Download eng_sentences.tsv + rus_sentences.tsv + links.csv from https://downloads.tatoeba.org/exports/per_language/ and https://downloads.tatoeba.org/exports/links.tar.bz2
+[ImportTatoeba] SKIP translations: /Users/xtrmdk/work/lingvize-ft-034-att1/db/data/tatoeba/links.csv not found. Download from https://downloads.tatoeba.org/exports/links.tar.bz2
+ImportTatoeba done: 0 English sentences with Russian translations processed
+      does not raise an error
+    with existing quizword sentences
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      does not duplicate existing sentences
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      creates new Tatoeba sentences not already in DB
+ImportTatoeba done: 2 English sentences with Russian translations processed
+      leaves quizword source unchanged
+
+WordMastery::InitializeState
+  .call
+    creates a new UserLexemeState
+    sets total_sense_count from lexeme senses
+    sets total_family_count from unique sentence_occurrence families
+    is idempotent — returns existing state without creating duplicate
+    defaults coverage counters to zero
+
+WordMastery::RecordCoverage
+  .call with correct answer
+    creates coverage records
+    updates state with correct counters and percentages
+  .call with incorrect answer
+    does not create any records
+  idempotency
+    does not duplicate coverage on repeated call
+  multiple senses coverage
+    tracks coverage across different senses
+  NULL sense edge case (FM-01)
+    creates state and family coverage but skips sense coverage
+  contribution creation (FT-034)
+    creates a LexemeReviewContribution on correct answer
+    does not create a contribution for incorrect answer
+    is idempotent — second call does not create a duplicate contribution
+    contribution_type (ASM-03 truth table)
+      is new_sense_and_family when both dimensions are new
+      is new_sense when only sense is new (family already covered)
+      is new_family when only family is new (sense already covered)
+      is reinforcement when both sense and family are already covered
+    NULL dimension edge cases (NEG-02)
+      treats NULL sense as already-covered and records new_family when family is new
+      treats NULL family as already-covered and records new_sense when sense is new
+    single-sense full coverage (NEG-01)
+      produces 100% sense coverage with new_sense_and_family contribution
+
+Cards
+  POST /cards/:id/master
+    redirects to login when not authenticated
+    when authenticated
+      masters the card and returns turbo stream
+      returns 404 for card belonging to another user
+
+Dashboard
+  GET /dashboard
+    redirects to login when not authenticated
+    returns 200 when authenticated
+    when user has no review history (zero state)
+      renders all three progress cards with zero values
+    when user has review history
+      renders progress cards with data from the operation
+
+Registrations
+  GET /register
+    returns 200
+    redirects to review if already logged in
+  POST /register
+    creates account and redirects to review
+    renders new with invalid params
+    when A1 content exists
+      creates cards for the new user
+    when BuildStarterDeck raises an error
+      still creates the user and redirects to review
+
+ReviewSessions
+  GET /review
+    redirects to login when not authenticated
+    when authenticated
+      returns 200 with a due card
+      returns 200 with empty state when no due cards
+  POST /review
+    redirects to login when not authenticated
+    when authenticated
+      records answer and returns turbo stream
+      returns 404 for card belonging to another user
+
+Sessions
+  GET /login
+    returns 200
+    redirects to review if already logged in
+  POST /login
+    logs in with valid credentials
+    renders new with invalid credentials
+  DELETE /logout
+    logs out and redirects
+
+db:dump rake tasks
+  db:dump:create
+    when pg_dump succeeds
+      prints the dump path and size
+    when pg_dump fails
+pg_dump failed
+      aborts with an error message
+  db:dump:restore
+    when dump file exists and pg_restore succeeds
+      prints restored message
+    when dump file does not exist
+Dump not found: /Users/xtrmdk/work/lingvize-ft-034-att1/db/dump/development.dump
+      aborts with dump not found message
+    when pg_restore fails
+pg_restore failed
+      aborts
+
+word_mastery rake tasks
+  word_mastery:backfill
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    creates coverage records from correct review logs
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    is idempotent — does not duplicate on second run
+Backfilling word mastery state from 0 correct review logs...
+Done: 0 processed, 0 errors
+Backfilling word mastery state from 0 correct review logs...
+Done: 0 processed, 0 errors
+    skips incorrect review logs
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    creates a LexemeReviewContribution per correct review log (FT-034)
+Backfilling word mastery state from 1 correct review logs...
+Done: 1 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+Backfilling word mastery state from 1 correct review logs...
+Done: 0 processed, 0 errors
+    does not duplicate LexemeReviewContribution on second run (FT-034)
+
+Finished in 7.5 seconds (files took 1.15 seconds to load)
+323 examples, 0 failures
+
+Coverage report generated for RSpec to /Users/xtrmdk/work/lingvize-ft-034-att1/coverage.
+Line Coverage: 90.53% (937 / 1035)
