@@ -37,7 +37,7 @@ audience: humans_and_agents
 | FT-029 | Lexeme Sense & Context Families | done | #29 | main |
 | FT-031 | Word Mastery State | done | #31 | feat/031-word-mastery-state |
 | FT-034 | Review Pipeline v2 + Word Progress Dashboard | done | #34 | — |
-| FT-036 | Session Builder v2: Dual-Level Scheduling | in_progress | #36 | feat/ft-036-att1 |
+| FT-036 | Session Builder v2: Dual-Level Scheduling | done | #36 | main |
 
 ## Legacy Note
 
