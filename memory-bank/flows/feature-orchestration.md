@@ -72,6 +72,9 @@ audience: humans_and_agents
  ФАЗА 4: EXECUTION
  Сессия Г (worktree, может быть несколько сессий)
  - EnterWorktree → изолированный worktree
+ - ⚠️ Перенести все uncommitted memory-bank/ файлы из main в worktree
+   (feature.md, eval/, implementation-plan.md, изменённые .md)
+   затем восстановить main: git checkout -- <files>, rm untracked
  - attempt-1/meta.yaml + start.md созданы
  - feature.md: delivery_status→in_progress
  - код по STEP-* из implementation-plan.md
@@ -477,6 +480,14 @@ memory-bank/features/FT-XXX/attempts/attempt-N/end.md  ← what_was_learned
 ---
 
 ## PR и Ship: протокол
+
+### Перед PR: убедиться что все memory-bank/ файлы в worktree
+
+Все изменения memory-bank/ (feature package, eval results, обновлённые .md) должны быть закоммичены **в worktree-ветке**, а не оставаться uncommitted в main. Чек-лист:
+
+1. `git status` в main — если есть uncommitted memory-bank/ файлы → скопировать в worktree
+2. `git checkout -- <files>` + `rm -rf` untracked dirs в main
+3. Закоммитить в worktree: `docs(XXX): feature package, ...`
 
 ### Создание PR
 
