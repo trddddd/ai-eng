@@ -1,0 +1,46 @@
+service: lingvize
+image: lingvize/lingvize
+
+servers:
+  web:
+    hosts:
+      - <%= ENV["KAMAL_SERVER_IP"] %>
+
+proxy:
+  host: lingvize.com
+  ssl: true
+  app_port: 3000
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 5
+
+registry:
+  server: ""
+  username: ""
+  password: ""
+
+builder:
+  arch: amd64
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - SENTRY_DSN
+
+accessories:
+  db:
+    image: postgres:18-alpine
+    host: <%= ENV["KAMAL_SERVER_IP"] %>
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_DB: lingvize_production
+        POSTGRES_USER: lingvize
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - lingvize-postgres-data:/var/lib/postgresql/data
+    options:
+      restart: always

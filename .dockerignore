@@ -1,0 +1,17 @@
+.git
+.github
+.kamal/secrets
+.claude
+.playwright-cli
+log/*
+tmp/*
+storage/*
+coverage/
+node_modules/
+db/dump/
+db/data/
+memory-bank/
+artifacts/
+.env
+.env.*
+.DS_Store

@@ -1,0 +1,6 @@
+EVID-BUILD: Docker build successful
+Date: 2026-04-18
+Command: docker build -t lingvize-test .
+Result: Image built successfully (sha256:0700feadbebe5c2cdc881dbf7a6ed5a13111066b185858b633f58d1c6552f8e6)
+Base image: ruby:4.0.2-slim
+Stages: base → build → final (multi-stage)
