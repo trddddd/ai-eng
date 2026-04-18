@@ -34,6 +34,10 @@ gem "csv"
 # Locale data for Rails i18n (includes ActiveRecord translations for :ru)
 gem "rails-i18n"
 
+# Error tracking
+gem "sentry-rails"
+gem "sentry-ruby"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[windows jruby]
 
