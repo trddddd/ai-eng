@@ -11,18 +11,38 @@ audience: humans_and_agents
 
 # Release And Deployment
 
-На данный момент формализованного релизного процесса нет. Проект в стадии активной разработки, деплой в production не производится.
-
-## Current Flow
+## Release Flow
 
 1. Feature branch → PR → review → squash merge в `main`
 2. CI (`rails.yml`) проверяет lint + tests автоматически
-3. Coverage artifact публикуется в GitHub Actions
+3. При успешном CI — GitHub Actions (`deploy.yml`) запускает `kamal deploy`
+4. Kamal собирает Docker image, пушит на сервер, выполняет zero-downtime deploy
+5. kamal-proxy делает healthcheck (`/up`), при success — переключает трафик
 
-## Future
+## Versioning
 
-При появлении production deployment этот документ будет дополнен:
-- release flow и versioning
-- deployment commands
-- rollback процедура
-- release test plan template
+Git SHA используется как версия контейнера. Отдельного семантического версионирования пока нет.
+
+## Rollback
+
+```bash
+bundle exec kamal rollback <VERSION>
+```
+
+Подробнее: [Rollback Runbook](runbooks/rollback.md)
+
+## Deployment Commands
+
+```bash
+# Автоматический деплой (при merge в main)
+# Ручной деплой
+bundle exec kamal deploy
+
+# Статус
+bundle exec kamal app details
+
+# Логи
+bundle exec kamal app logs
+```
+
+Подробнее: [Deploy Runbook](runbooks/deploy.md)

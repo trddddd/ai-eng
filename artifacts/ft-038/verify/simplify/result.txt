@@ -1,0 +1,22 @@
+EVID-SIMPLIFY: /simplify review completed
+Date: 2026-04-18
+Agents: 3 parallel (code reuse, code quality, efficiency)
+
+Fixes applied:
+1. bin/docker-entrypoint: removed dead first branch in server-detection condition
+2. .dockerignore: created — excludes .git, tmp, log, storage, node_modules, etc.
+3. config/deploy.yml: removed redundant RAILS_ENV, RAILS_LOG_TO_STDOUT, RAILS_SERVE_STATIC_FILES (already set in Dockerfile/Rails defaults)
+4. .github/workflows/deploy.yml: removed redundant DOCKER_BUILDKIT env var
+5. memory-bank/ops/runbooks/deploy.md: replaced `cat .kamal/secrets` with safe existence check
+6. config/deploy.yml + stages.md: aligned PostgreSQL version to 18 (matching dev/CI)
+
+Skipped (not actionable / by design):
+- Empty registry block: OQ-01 open question, human decision
+- libvips in Dockerfile: needed for image_processing gem (Active Storage)
+- /up health check path in multiple places: Rails convention, no abstraction needed
+- lingvize.com hardcoded: single-domain app, acceptable
+- Full bundle install in CI deploy: follow-up optimization
+- Docker build cache: follow-up optimization
+- db:prepare in entrypoint: standard Rails 8 single-server pattern
+
+Docker rebuild with .dockerignore: success (sha256:31dbd1483ff2)

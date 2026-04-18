@@ -11,13 +11,24 @@ audience: humans_and_agents
 
 # Stages And Non-Local Environments
 
-На данный момент проект работает только в локальной разработке и CI.
-
 ## Environment Inventory
 
-| Environment | Purpose | Access path | Notes |
-| --- | --- | --- | --- |
-| `development` | Локальная разработка | `localhost:3000` | Docker Compose для PostgreSQL/Redis |
-| `test` | CI и локальные тесты | GitHub Actions | PostgreSQL 18-alpine service |
+| Environment | Purpose | Access path | Infrastructure | Notes |
+| --- | --- | --- | --- | --- |
+| `development` | Локальная разработка | `localhost:3000` | Docker Compose для PostgreSQL/Redis | — |
+| `test` | CI и локальные тесты | GitHub Actions | PostgreSQL 18-alpine service | — |
+| `production` | Живой продукт | `https://lingvize.com` | Selectel VDS, Kamal 2, PostgreSQL accessory | ADR-003 |
 
-Production и staging окружения пока не развёрнуты. Этот документ будет дополнен при появлении новых stages.
+## Production Details
+
+- **VDS:** Selectel (2 vCPU, 4GB RAM, Ubuntu 24.04)
+- **Deploy tool:** Kamal 2 (zero-downtime via kamal-proxy)
+- **SSL:** Let's Encrypt (автоматический через kamal-proxy)
+- **Database:** PostgreSQL 18 как Kamal accessory на том же сервере
+- **Error tracking:** Sentry cloud (sentry.io)
+- **CI/CD:** GitHub Actions → `kamal deploy` при merge в main
+
+## Runbooks
+
+- [Deploy](runbooks/deploy.md)
+- [Rollback](runbooks/rollback.md)
